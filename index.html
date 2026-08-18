@@ -229,6 +229,20 @@ function statusOf(p){
   return STATUS_LABEL[s] ? s : "unreported";
 }
 
+// Google Maps URL API. Supplying only a destination makes Maps use the device's
+// current location as the origin and start routing immediately, so the driver
+// never types anything. On phones this opens the Google Maps app when installed.
+// The coordinates are authoritative; the hospital name rides along only as the
+// label shown in the app, so a wrong name cannot send anyone to the wrong place.
+function directionsUrl(lat, lon){
+  const params = new URLSearchParams({
+    api: "1",
+    destination: lat + "," + lon,
+    travelmode: "driving"
+  });
+  return "https://www.google.com/maps/dir/?" + params.toString();
+}
+
 function matches(p){
   if (filter === "all") return true;
   if (filter === "open") return statusOf(p) === "available" || statusOf(p) === "limited";
@@ -288,8 +302,7 @@ function render(){
           '</span></div>' +
         '</div>' +
         '<div class="actions">' + callBtn +
-          '<a class="dir" target="_blank" rel="noopener" href="https://www.openstreetmap.org/?mlat=' +
-            lat + '&mlon=' + lon + '#map=17/' + lat + '/' + lon + '">Directions</a>' +
+          '<a class="dir" target="_blank" rel="noopener" href="' + directionsUrl(lat, lon) + '">Directions</a>' +
         '</div>' +
       '</div></li>';
   }).join("");

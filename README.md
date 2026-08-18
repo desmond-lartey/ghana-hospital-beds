@@ -43,28 +43,18 @@ GeoLens removes that constraint. It is a self-hosted catalog with its own authen
 
 ## Architecture
 
-```
-Hospital staff                Ambulance, families, clinic doctors
-      |                                       |
-      | sign in, edit own record              | search, view, call
-      v                                       v
-+-----------------------------+   +-----------------------------+
-|  Staff reporting form        |   |  Public bed finder           |
-|  site/staff.html             |   |  site/index.html             |
-+--------------+---------------+   +--------------+--------------+
-               |                                  |
-               | PATCH via OGC API Features       | reads GeoJSON
-               v                                  v
-        +--------------------------------------------------+
-        |   GeoLens server                                   |
-        |   authentication, roles, permissions, audit log    |
-        +--------------------------+-----------------------+
-                                   |
-                                   v
-                          +------------------+
-                          |  PostGIS          |
-                          |  hospitals table  |
-                          +------------------+
+```mermaid
+flowchart LR
+  Staff[Hospital staff] --> Form[Staff reporting form<br/>site/staff.html]
+  Public[Dispatchers, families,<br/>clinic doctors] --> Finder[Public bed finder<br/>site/index.html]
+  Admin[Administrators] --> GeoLibre[GeoLibre]
+
+  Form -->|PATCH, OGC API Features| API[GeoLens server<br/>auth, roles, permissions, audit]
+  GeoLibre -->|read and write| API
+  API --> DB[(PostGIS<br/>hospitals)]
+
+  Finder -->|reads GeoJSON| Pages[GitHub Pages<br/>static dataset]
+  API -.->|publish| Pages
 ```
 
 The public finder reads the dataset directly and requires no server. The staff form writes through GeoLens, which enforces which account may edit which hospital.
