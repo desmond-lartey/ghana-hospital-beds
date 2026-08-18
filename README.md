@@ -128,7 +128,7 @@ Failure states name both the cause and the remedy. A permissions error directs t
 
 ---
 
-## Deployment
+<!-- ## Deployment
 
 ### Static site, no server
 
@@ -170,7 +170,7 @@ A staged path avoids blocking the map on infrastructure:
 
 Serving the application and its data from one origin removes the CORS and cookie problems that arise when they are split across hosts.
 
-GitHub Pages takes a `CNAME` file in the repository containing the domain, plus a DNS CNAME record pointing at `<username>.github.io`. The GeoLibre project follows this same pattern: its plugin registry is published to GitHub Pages at `plugins.geolibre.app`.
+GitHub Pages takes a `CNAME` file in the repository containing the domain, plus a DNS CNAME record pointing at `<username>.github.io`. -->
 
 ---
 
