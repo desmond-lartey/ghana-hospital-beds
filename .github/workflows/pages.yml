@@ -1,0 +1,61 @@
+name: Publish site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - "data/hospitals.geojson"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sync dataset into the site folder
+        run: |
+          mkdir -p site/data
+          cp data/hospitals.geojson site/data/hospitals.geojson
+
+      - name: Check the dataset is valid GeoJSON
+        run: |
+          python3 - <<'PY'
+          import json, sys
+          with open("site/data/hospitals.geojson", encoding="utf-8") as fh:
+              doc = json.load(fh)
+          feats = doc.get("features", [])
+          if not feats:
+              sys.exit("hospitals.geojson has no features")
+          for f in feats:
+              lon, lat = f["geometry"]["coordinates"]
+              if not (-0.6 < lon < 0.3 and 5.3 < lat < 6.0):
+                  sys.exit(f"{f['properties'].get('hospital_name')} sits outside Greater Accra: {lon},{lat}")
+          print(f"{len(feats)} hospitals validated")
+          PY
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
