@@ -1,6 +1,6 @@
 # Accra Hospital Bed Availability
 
-A live map of hospital bed, ICU, and oxygen availability across Accra. Hospital staff report status; ambulance dispatchers, families, and clinic doctors search the map and call ahead before traveling.
+A live map of hospital bed, ICU, and oxygen availability across Accra. Hospital staff report status; ambulance dispatchers, families, and clinic doctors search the map and call ahead before traveling. 
 
 Built entirely on free and open-source software, self-hosted, with no paid tier and no vendor account required.
 
