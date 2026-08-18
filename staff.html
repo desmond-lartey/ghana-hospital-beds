@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Report bed counts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#14181d;--ink-2:#4a5560;--ink-3:#7b8792;
+  --paper:#f7f7f5;--card:#fff;--rule:#e0e2e0;--rule-2:#c9ccc9;
+  --go:#1d7a5f;--go-bg:#e4f2ec;--wait:#b06a06;--wait-bg:#fbeeda;
+  --stop:#b3322f;--stop-bg:#fbe8e7;--none:#6e7780;--none-bg:#eceeed;
+}
+@media (prefers-color-scheme: dark){
+  :root{--ink:#eef1f2;--ink-2:#a8b2bb;--ink-3:#7d8791;
+    --paper:#101316;--card:#181c20;--rule:#2b3138;--rule-2:#3a424a;
+    --go:#5cc79f;--go-bg:#12312a;--wait:#e0a038;--wait-bg:#39290f;
+    --stop:#f0736f;--stop-bg:#3a1a19;--none:#8b949d;--none-bg:#22272c;}
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:16px;line-height:1.5;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px 64px}
+header{padding:28px 0 18px;border-bottom:1px solid var(--rule)}
+h1{font-family:Archivo,sans-serif;font-weight:700;font-size:clamp(24px,5vw,32px);
+  letter-spacing:-.02em;line-height:1.1;margin:0 0 6px}
+.sub{color:var(--ink-2);font-size:15px;margin:0}
+section{margin:24px 0 0}
+h2{font-family:Archivo,sans-serif;font-weight:600;font-size:17px;margin:0 0 12px;
+  letter-spacing:-.01em}
+label{display:block;font-size:13px;font-weight:500;color:var(--ink-2);margin:0 0 5px}
+input,select{
+  width:100%;font:inherit;font-size:16px;padding:11px 12px;border-radius:8px;
+  border:1px solid var(--rule-2);background:var(--card);color:var(--ink);min-height:44px;
+}
+input:focus,select:focus{outline:2px solid var(--ink);outline-offset:1px;border-color:var(--ink)}
+input[type=number]{font-family:"IBM Plex Mono",monospace;font-weight:600;
+  font-variant-numeric:tabular-nums}
+.field{margin:0 0 14px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:460px){.grid{grid-template-columns:1fr}}
+.checks{display:flex;flex-direction:column;gap:10px;margin:4px 0 0}
+.check{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--ink);cursor:pointer}
+.check input{width:20px;height:20px;min-height:20px;flex:0 0 20px;accent-color:var(--ink)}
+button{
+  appearance:none;font:inherit;font-size:15px;font-weight:600;cursor:pointer;
+  padding:13px 20px;border-radius:8px;border:none;
+  background:var(--ink);color:var(--paper);width:100%;min-height:48px;
+}
+button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+button.ghost{background:transparent;color:var(--ink-2);border:1px solid var(--rule-2);width:auto;
+  padding:9px 16px;min-height:40px;font-weight:500;font-size:14px}
+.err{color:var(--stop);font-size:13px;margin:6px 0 0;font-weight:500}
+.msg{padding:12px 14px;border-radius:8px;font-size:14px;margin:14px 0 0}
+.msg.ok{background:var(--go-bg);color:var(--go)}
+.msg.bad{background:var(--stop-bg);color:var(--stop)}
+.msg.info{background:var(--none-bg);color:var(--ink-2)}
+.preview{
+  display:flex;align-items:center;gap:12px;margin:16px 0 0;padding:12px 14px;
+  border:1px solid var(--rule);border-radius:8px;background:var(--card)
+}
+.dot{width:14px;height:14px;border-radius:50%;flex:0 0 14px}
+.preview .txt{font-family:"IBM Plex Mono",monospace;font-size:12px;
+  text-transform:uppercase;letter-spacing:.07em;font-weight:600}
+.hint{font-size:13px;color:var(--ink-3);margin:8px 0 0}
+.hint code{font-family:"IBM Plex Mono",monospace;font-size:12px;
+  background:var(--none-bg);padding:1px 5px;border-radius:3px}
+footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--rule);
+  font-size:13px;color:var(--ink-3)}
+footer a{color:var(--ink-2)}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Report bed counts</h1>
+  <p class="sub">For hospital staff. Takes about thirty seconds, twice a day.</p>
+</header>
+
+<!-- Sign in -->
+<section id="signin">
+  <h2>Sign in</h2>
+  <div class="field">
+    <label for="server">GeoLens server</label>
+    <input id="server" type="url" value="http://localhost:8080" autocomplete="url" inputmode="url">
+  </div>
+  <div class="field">
+    <label for="user">Username</label>
+    <input id="user" type="text" autocomplete="username" autocapitalize="none">
+  </div>
+  <div class="field">
+    <label for="pass">Password</label>
+    <input id="pass" type="password" autocomplete="current-password">
+  </div>
+  <button id="btn-signin">Sign in</button>
+  <p class="err" id="err-signin" hidden></p>
+  <p class="hint">
+    Your sign-in goes only to the GeoLens server above. Nothing is sent anywhere else,
+    and the session is dropped when you close this page.
+  </p>
+</section>
+
+<!-- Report -->
+<section id="report" hidden>
+  <h2>Today's counts</h2>
+
+  <div class="field">
+    <label for="hospital">Hospital</label>
+    <select id="hospital"></select>
+  </div>
+
+  <div class="grid">
+    <div class="field">
+      <label for="emergency">Emergency</label>
+      <input id="emergency" type="number" min="0" max="999" step="1" inputmode="numeric">
+    </div>
+    <div class="field">
+      <label for="icu">ICU</label>
+      <input id="icu" type="number" min="0" max="999" step="1" inputmode="numeric">
+    </div>
+    <div class="field">
+      <label for="general">General ward</label>
+      <input id="general" type="number" min="0" max="999" step="1" inputmode="numeric">
+    </div>
+  </div>
+
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="oxygen"> Oxygen available</label>
+    <label class="check"><input type="checkbox" id="ambulance"> Ambulance available</label>
+  </div>
+
+  <div class="field" style="margin-top:16px">
+    <label for="by">Your name</label>
+    <input id="by" type="text" autocomplete="name" placeholder="Who is reporting this">
+  </div>
+
+  <div class="preview" aria-live="polite">
+    <span class="dot" id="dot" style="background:var(--none)"></span>
+    <span class="txt" id="preview-txt">Enter counts to see the status</span>
+  </div>
+
+  <p class="err" id="err-report" hidden></p>
+  <div style="margin-top:16px"><button id="btn-submit">Submit report</button></div>
+  <div style="margin-top:10px"><button class="ghost" id="btn-signout">Sign out</button></div>
+
+  <div class="msg info" id="out" hidden></div>
+</section>
+
+<footer>
+  <p><a href="./index.html">Back to the public map</a></p>
+</footer>
+
+</div>
+
+<script>
+// Thresholds must match data/update_status.py
+const LIMITED = { emergency: 3, icu: 2, general: 5 };
+const COLOR = {
+  available: { hex:"#1D9E75", stroke:"#0F6E56" },
+  limited:   { hex:"#EF9F27", stroke:"#854F0B" },
+  full:      { hex:"#E24B4A", stroke:"#A32D2D" },
+  unreported:{ hex:"#888780", stroke:"#5F5E5A" }
+};
+const LABEL = {
+  available:"Beds available", limited:"Few left, call first",
+  full:"Full", unreported:"Not reported"
+};
+
+let token = null;
+let server = "";
+let collectionId = null;
+let features = [];
+
+const $ = id => document.getElementById(id);
+
+function classify(e, i, g){
+  if ([e,i,g].some(v => v === null || Number.isNaN(v))) return "unreported";
+  if (e === 0 || i === 0 || g === 0) return "full";
+  if (e <= LIMITED.emergency || i <= LIMITED.icu || g <= LIMITED.general) return "limited";
+  return "available";
+}
+
+function readNum(id){
+  const raw = $(id).value.trim();
+  if (raw === "") return null;
+  const n = Number(raw);
+  return Number.isInteger(n) && n >= 0 ? n : NaN;
+}
+
+function updatePreview(){
+  const st = classify(readNum("emergency"), readNum("icu"), readNum("general"));
+  $("dot").style.background = COLOR[st].hex;
+  $("preview-txt").textContent = st === "unreported"
+    ? "Enter all three counts to see the status"
+    : LABEL[st];
+}
+["emergency","icu","general"].forEach(id =>
+  $(id).addEventListener("input", () => { updatePreview(); hide("err-report"); }));
+
+function show(id, text, cls){
+  const el = $(id);
+  el.textContent = text;
+  el.hidden = false;
+  if (cls) el.className = "msg " + cls;
+}
+function hide(id){ $(id).hidden = true; }
+
+async function signIn(){
+  hide("err-signin");
+  server = $("server").value.trim().replace(/\/+$/, "");
+  const username = $("user").value.trim();
+  const password = $("pass").value;
+
+  if (!server) return show("err-signin", "Enter the GeoLens server address.");
+  if (!username || !password) return show("err-signin", "Enter your username and password.");
+
+  $("btn-signin").disabled = true;
+  $("btn-signin").textContent = "Signing in\u2026";
+
+  try {
+    // GeoLens login takes an OAuth2 password form, not JSON.
+    const body = new URLSearchParams({ username, password });
+    const res = await fetch(server + "/api/auth/login/", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body
+    });
+
+    if (res.status === 401 || res.status === 400)
+      throw new Error("That username and password did not work. Check them and try again.");
+    if (!res.ok) throw new Error("The server returned an error (" + res.status + ").");
+
+    const data = await res.json();
+    token = data.access_token;
+    if (!token) throw new Error("The server did not return a session token.");
+
+    $("pass").value = "";
+    await loadHospitals();
+    $("signin").hidden = true;
+    $("report").hidden = false;
+  } catch (err) {
+    const offline = err instanceof TypeError;
+    show("err-signin", offline
+      ? "Could not reach " + server + ". Check the address, and that GeoLens is running."
+      : err.message);
+  } finally {
+    $("btn-signin").disabled = false;
+    $("btn-signin").textContent = "Sign in";
+  }
+}
+
+async function api(path, options){
+  const res = await fetch(server + path, {
+    ...options,
+    headers: { Authorization: "Bearer " + token, ...(options && options.headers) }
+  });
+  if (res.status === 401) { token = null; throw new Error("Your session expired. Sign in again."); }
+  return res;
+}
+
+async function loadHospitals(){
+  // Find the hospitals dataset in the catalog, then read its features.
+  const search = await api("/api/search/datasets/?q=hospital%20beds&limit=5");
+  if (!search.ok) throw new Error("Could not read the dataset catalog (" + search.status + ").");
+  const catalog = await search.json();
+  const hit = (catalog.features || [])[0];
+  if (!hit) throw new Error("No hospital dataset found on this server. Publish hospitals.geojson first.");
+  collectionId = hit.id;
+
+  const items = await api("/api/collections/" + encodeURIComponent(collectionId) + "/items?limit=500");
+  if (!items.ok) throw new Error("Could not read hospitals (" + items.status + ").");
+  const fc = await items.json();
+  features = fc.features || [];
+
+  const select = $("hospital");
+  select.innerHTML = features.map((f, idx) =>
+    '<option value="' + idx + '">' +
+    String(f.properties.hospital_name || "Unnamed").replace(/[<>&]/g, "") +
+    "</option>").join("");
+
+  select.addEventListener("change", prefill);
+  prefill();
+}
+
+function prefill(){
+  const f = features[Number($("hospital").value)];
+  if (!f) return;
+  const p = f.properties || {};
+  $("emergency").value = p.emergency_beds ?? "";
+  $("icu").value = p.icu_beds ?? "";
+  $("general").value = p.general_beds ?? "";
+  $("oxygen").checked = p.oxygen_available === true;
+  $("ambulance").checked = p.ambulance_available === true;
+  updatePreview();
+}
+
+async function submitReport(){
+  hide("err-report");
+  hide("out");
+
+  const e = readNum("emergency"), i = readNum("icu"), g = readNum("general");
+
+  if ([e,i,g].some(Number.isNaN))
+    return show("err-report", "Bed counts must be whole numbers, zero or more.");
+  if ([e,i,g].some(v => v === null))
+    return show("err-report", "Fill in all three bed counts before submitting.");
+  if (!$("by").value.trim())
+    return show("err-report", "Enter your name so the report can be attributed.");
+
+  const f = features[Number($("hospital").value)];
+  if (!f) return show("err-report", "Select a hospital first.");
+
+  const status = classify(e, i, g);
+  const props = {
+    ...f.properties,
+    emergency_beds: e,
+    icu_beds: i,
+    general_beds: g,
+    oxygen_available: $("oxygen").checked,
+    ambulance_available: $("ambulance").checked,
+    status,
+    last_updated: new Date().toISOString(),
+    updated_by: $("by").value.trim(),
+    "marker-color": COLOR[status].hex,
+    stroke: COLOR[status].stroke,
+    fill: COLOR[status].hex
+  };
+
+  $("btn-submit").disabled = true;
+  $("btn-submit").textContent = "Submitting\u2026";
+
+  try {
+    const path = "/api/collections/" + encodeURIComponent(collectionId) +
+                 "/items/" + encodeURIComponent(f.id);
+    const res = await api(path, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "Feature", geometry: f.geometry, properties: props })
+    });
+
+    if (res.status === 403)
+      throw new Error("You do not have permission to edit this hospital. Ask an administrator to grant your account editor access to it.");
+    if (res.status === 404 || res.status === 405)
+      throw new Error("This GeoLens server does not accept edits at that address. Open " + server + "/api/docs to confirm the write endpoint for your version, then update WRITE PATH in this page.");
+    if (!res.ok) throw new Error("The server rejected the report (" + res.status + ").");
+
+    f.properties = props;
+    show("out", "Reported " + LABEL[status].toLowerCase() + " for " +
+      (props.hospital_name || "this hospital") + ". Emergency " + e +
+      ", ICU " + i + ", general " + g + ".", "ok");
+  } catch (err) {
+    const offline = err instanceof TypeError;
+    show("out", offline ? "Could not reach the server. Your report was not saved." : err.message, "bad");
+  } finally {
+    $("btn-submit").disabled = false;
+    $("btn-submit").textContent = "Submit report";
+  }
+}
+
+function signOut(){
+  token = null; features = []; collectionId = null;
+  $("report").hidden = true;
+  $("signin").hidden = false;
+  $("pass").value = "";
+  hide("out");
+}
+
+$("btn-signin").addEventListener("click", signIn);
+$("pass").addEventListener("keydown", ev => { if (ev.key === "Enter") signIn(); });
+$("btn-submit").addEventListener("click", submitReport);
+$("btn-signout").addEventListener("click", signOut);
+</script>
+</body>
+</html>
