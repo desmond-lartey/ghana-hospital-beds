@@ -277,7 +277,7 @@ async function loadHospitals(){
   if (!hit) throw new Error("No hospital dataset found on this server. Publish hospitals.geojson first.");
   collectionId = hit.id;
 
-  const items = await api("/api/collections/" + encodeURIComponent(collectionId) + "/items?limit=500");
+  const items = await api("/api/datasets/" + encodeURIComponent(collectionId) + "/features?limit=500");
   if (!items.ok) throw new Error("Could not read hospitals (" + items.status + ").");
   const fc = await items.json();
   features = fc.features || [];
@@ -340,8 +340,12 @@ async function submitReport(){
   $("btn-submit").textContent = "Submitting\u2026";
 
   try {
-    const path = "/api/collections/" + encodeURIComponent(collectionId) +
-                 "/items/" + encodeURIComponent(f.id);
+    const gid = f.id ?? (f.properties && (f.properties.gid ?? f.properties.id));
+    if (gid === undefined || gid === null)
+      throw new Error("This hospital record has no feature id, so it cannot be updated.");
+
+    const path = "/api/datasets/" + encodeURIComponent(collectionId) +
+                 "/features/" + encodeURIComponent(gid);
     const res = await api(path, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -351,7 +355,7 @@ async function submitReport(){
     if (res.status === 403)
       throw new Error("You do not have permission to edit this hospital. Ask an administrator to grant your account editor access to it.");
     if (res.status === 404 || res.status === 405)
-      throw new Error("This GeoLens server does not accept edits at that address. Open " + server + "/api/docs to confirm the write endpoint for your version, then update WRITE PATH in this page.");
+      throw new Error("This GeoLens server does not accept edits at that address. Open " + server + "/api/docs to confirm the feature-update route for your version.");
     if (!res.ok) throw new Error("The server rejected the report (" + res.status + ").");
 
     f.properties = props;
