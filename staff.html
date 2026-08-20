@@ -92,7 +92,10 @@ footer a{color:var(--ink-2)}
   <h2>Sign in</h2>
   <div class="field">
     <label for="server">GeoLens server</label>
-    <input id="server" type="url" value="http://localhost:8080" autocomplete="url" inputmode="url">
+    <input id="server" type="text" readonly tabindex="-1"
+           autocomplete="off" aria-describedby="server-hint"
+           style="background:var(--none-bg);color:var(--ink-2);cursor:default">
+    <p class="hint" id="server-hint">Set by the site administrator in this page's configuration.</p>
   </div>
   <div class="field">
     <label for="user">Username</label>
@@ -163,6 +166,10 @@ footer a{color:var(--ink-2)}
 </div>
 
 <script>
+// The GeoLens server this form reports to. Change this one line when the
+// server moves; nothing else in the page needs editing.
+const GEOLENS_SERVER = "https://verbose-trout-x75xgrj7xwj2p6gq-8080.app.github.dev";
+
 // Thresholds must match data/update_status.py
 const LIMITED = { emergency: 3, icu: 2, general: 5 };
 const COLOR = {
@@ -217,11 +224,12 @@ function hide(id){ $(id).hidden = true; }
 
 async function signIn(){
   hide("err-signin");
-  server = $("server").value.trim().replace(/\/+$/, "");
+  server = GEOLENS_SERVER.trim().replace(/\/+$/, "");
   const username = $("user").value.trim();
   const password = $("pass").value;
 
-  if (!server) return show("err-signin", "Enter the GeoLens server address.");
+  if (!server) return show("err-signin",
+    "No GeoLens server is configured for this page. Set GEOLENS_SERVER in staff.html.");
   if (!username || !password) return show("err-signin", "Enter your username and password.");
 
   $("btn-signin").disabled = true;
@@ -379,6 +387,7 @@ function signOut(){
   hide("out");
 }
 
+$("server").value = GEOLENS_SERVER;
 $("btn-signin").addEventListener("click", signIn);
 $("pass").addEventListener("keydown", ev => { if (ev.key === "Enter") signIn(); });
 $("btn-submit").addEventListener("click", submitReport);
