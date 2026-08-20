@@ -1,9 +1,7 @@
 # GeoLens setup
 
 GeoLens ships its own installer and compose stack, so this project does not maintain
-one. An earlier draft of this repository contained a hand-written `docker-compose.yml`
-that guessed at image names and environment variables; it was removed because it was
-wrong. Use the official installer below.
+one.
 
 GeoLens is Apache-2.0 licensed and self-hosted. It stores everything in PostGIS and
 serves OGC API Features, which is what the map and the staff form both read.
@@ -19,7 +17,7 @@ admin credentials, and runs `docker compose up -d`. Wait about sixty seconds, th
 http://localhost:8080.
 
 The admin username defaults to `admin`. The password is auto-generated and written to
-`.env` rather than printed. Retrieve it with:
+`.env`. Retrieve it with:
 
 ```bash
 grep '^GEOLENS_ADMIN_PASSWORD=' .env

@@ -1,0 +1,826 @@
+{
+  "type": "FeatureCollection",
+  "name": "accra_hospital_beds",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:OGC:1.3/CRS84"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.2264,
+          5.5359
+        ]
+      },
+      "properties": {
+        "hospital_name": "Korle-Bu Teaching Hospital",
+        "hospital_type": "Teaching",
+        "region_area": "Korle-Bu",
+        "address": "Guggisberg Ave, Korle-Bu, Accra",
+        "main_phone": "+233 302 665401",
+        "updater_phone": "",
+        "emergency_beds": null,
+        "icu_beds": null,
+        "general_beds": null,
+        "oxygen_available": null,
+        "ambulance_available": null,
+        "status": "unreported",
+        "last_updated": null,
+        "updated_by": null,
+        "notes": "Identity verified from public directories. Bed figures awaiting first hospital report.",
+        "marker-color": "#888780",
+        "marker-size": "medium",
+        "stroke": "#5F5E5A",
+        "stroke-width": 1,
+        "fill": "#888780",
+        "fill-opacity": 0.7,
+        "listing_status": "published",
+        "location_confidence": "verified",
+        "hefra_licence": "",
+        "suggested_by": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.198676,
+          5.561618
+        ]
+      },
+      "properties": {
+        "hospital_name": "Greater Accra Regional Hospital (Ridge)",
+        "hospital_type": "Government",
+        "region_area": "Ridge",
+        "address": "Castle Rd, Ridge, Accra",
+        "main_phone": "",
+        "updater_phone": "",
+        "emergency_beds": null,
+        "icu_beds": null,
+        "general_beds": null,
+        "oxygen_available": null,
+        "ambulance_available": null,
+        "status": "unreported",
+        "last_updated": null,
+        "updated_by": null,
+        "notes": "420-bed capacity per public records. Coordinates verified. Phone not found in public sources.",
+        "marker-color": "#888780",
+        "marker-size": "medium",
+        "stroke": "#5F5E5A",
+        "stroke-width": 1,
+        "fill": "#888780",
+        "fill-opacity": 0.7,
+        "listing_status": "published",
+        "location_confidence": "verified",
+        "hefra_licence": "",
+        "suggested_by": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.187,
+          5.65
+        ]
+      },
+      "properties": {
+        "hospital_name": "University of Ghana Teaching Hospital",
+        "hospital_type": "Teaching",
+        "region_area": "Legon",
+        "address": "University of Ghana Campus, Legon, Accra",
+        "main_phone": "",
+        "updater_phone": "",
+        "emergency_beds": null,
+        "icu_beds": null,
+        "general_beds": null,
+        "oxygen_available": null,
+        "ambulance_available": null,
+        "status": "unreported",
+        "last_updated": null,
+        "updated_by": null,
+        "notes": "617-bed facility per public records. Coordinates approximate, verify before deployment.",
+        "marker-color": "#888780",
+        "marker-size": "medium",
+        "stroke": "#5F5E5A",
+        "stroke-width": 1,
+        "fill": "#888780",
+        "fill-opacity": 0.7,
+        "listing_status": "published",
+        "location_confidence": "approximate",
+        "hefra_licence": "",
+        "suggested_by": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.1855,
+          5.581
+        ]
+      },
+      "properties": {
+        "hospital_name": "37 Military Hospital",
+        "hospital_type": "Government",
+        "region_area": "Cantonments",
+        "address": "Liberation Road, Accra",
+        "main_phone": "",
+        "updater_phone": "",
+        "emergency_beds": null,
+        "icu_beds": null,
+        "general_beds": null,
+        "oxygen_available": null,
+        "ambulance_available": null,
+        "status": "unreported",
+        "last_updated": null,
+        "updated_by": null,
+        "notes": "Coordinates approximate, verify before deployment. Phone not found in public sources.",
+        "marker-color": "#888780",
+        "marker-size": "medium",
+        "stroke": "#5F5E5A",
+        "stroke-width": 1,
+        "fill": "#888780",
+        "fill-opacity": 0.7,
+        "listing_status": "published",
+        "location_confidence": "approximate",
+        "hefra_licence": "",
+        "suggested_by": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.1665,
+          5.5554
+        ]
+      },
+      "properties": {
+        "hospital_name": "La General Hospital",
+        "hospital_type": "Government",
+        "region_area": "La",
+        "address": "La, Accra",
+        "main_phone": "",
+        "updater_phone": "",
+        "emergency_beds": null,
+        "icu_beds": null,
+        "general_beds": null,
+        "oxygen_available": null,
+        "ambulance_available": null,
+        "status": "unreported",
+        "last_updated": null,
+        "updated_by": null,
+        "notes": "Formerly La Polyclinic. Coordinates verified from public reference.",
+        "marker-color": "#888780",
+        "marker-size": "medium",
+        "stroke": "#5F5E5A",
+        "stroke-width": 1,
+        "fill": "#888780",
+        "fill-opacity": 0.7,
+        "listing_status": "published",
+        "location_confidence": "verified",
+        "hefra_licence": "",
+        "suggested_by": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.165,
+          5.605
+        ]
+      },
+      "properties": {
+        "hospital_name": "Lister Hospital",
+        "hospital_type": "Private",
+        "region_area": "East Airport",
+        "address": "Nii Martey Tsuru St, East Airport, off Spintex Road, Accra",
+        "main_phone": "+233 303 409030",
+        "updater_phone": "",
+        "emergency_beds": null,
+        "icu_beds": null,
+        "general_beds": null,
+        "oxygen_available": null,
+        "ambulance_available": null,
+        "status": "unreported",
+        "last_updated": null,
+        "updated_by": null,
+        "notes": "Coordinates approximate, verify before deployment.",
+        "marker-color": "#888780",
+        "marker-size": "medium",
+        "stroke": "#5F5E5A",
+        "stroke-width": 1,
+        "fill": "#888780",
+        "fill-opacity": 0.7,
+        "listing_status": "published",
+        "location_confidence": "approximate",
+        "hefra_licence": "",
+        "suggested_by": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.177,
+          5.604
+        ]
+      },
+      "properties": {
+        "hospital_name": "Nyaho Medical Centre",
+        "hospital_type": "Private",
+        "region_area": "Airport Residential Area",
+        "address": "35 Aviation Rd, Airport Residential Area, Accra",
+        "main_phone": "+233 302 775341",
+        "updater_phone": "",
+        "emergency_beds": null,
+        "icu_beds": null,
+        "general_beds": null,
+        "oxygen_available": null,
+        "ambulance_available": null,
+        "status": "unreported",
+        "last_updated": null,
+        "updated_by": null,
+        "notes": "Coordinates approximate, verify before deployment.",
+        "marker-color": "#888780",
+        "marker-size": "medium",
+        "stroke": "#5F5E5A",
+        "stroke-width": 1,
+        "fill": "#888780",
+        "fill-opacity": 0.7,
+        "listing_status": "published",
+        "location_confidence": "approximate",
+        "hefra_licence": "",
+        "suggested_by": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.183,
+          5.556
+        ]
+      },
+      "properties": {
+        "hospital_name": "Trust Hospital (Osu Main)",
+        "hospital_type": "Private",
+        "region_area": "Osu",
+        "address": "Osu Main, Accra",
+        "main_phone": "+233 302 761974",
+        "updater_phone": "",
+        "emergency_beds": null,
+        "icu_beds": null,
+        "general_beds": null,
+        "oxygen_available": null,
+        "ambulance_available": null,
+        "status": "unreported",
+        "last_updated": null,
+        "updated_by": null,
+        "notes": "Coordinates approximate, verify before deployment.",
+        "marker-color": "#888780",
+        "marker-size": "medium",
+        "stroke": "#5F5E5A",
+        "stroke-width": 1,
+        "fill": "#888780",
+        "fill-opacity": 0.7,
+        "listing_status": "published",
+        "location_confidence": "approximate",
+        "hefra_licence": "",
+        "suggested_by": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.1889,
+          5.5747
+        ]
+      },
+      "properties": {
+        "hospital_name": "Police Hospital",
+        "hospital_type": "Government",
+        "region_area": "Cantonments",
+        "address": "Ring Road East, Accra",
+        "main_phone": "",
+        "updater_phone": "",
+        "emergency_beds": null,
+        "icu_beds": null,
+        "general_beds": null,
+        "oxygen_available": null,
+        "ambulance_available": null,
+        "status": "unreported",
+        "last_updated": null,
+        "updated_by": null,
+        "listing_status": "published",
+        "location_confidence": "approximate",
+        "hefra_licence": "",
+        "suggested_by": "",
+        "notes": "Coordinates approximate. Verify against the site and the HeFRA licensed register before operational use.",
+        "marker-color": "#888780",
+        "stroke": "#5F5E5A",
+        "fill": "#888780",
+        "marker-size": "medium",
+        "stroke-width": 1,
+        "fill-opacity": 0.7
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.2264,
+          5.6122
+        ]
+      },
+      "properties": {
+        "hospital_name": "Achimota Hospital",
+        "hospital_type": "Government",
+        "region_area": "Achimota",
+        "address": "Achimota, Accra",
+        "main_phone": "",
+        "updater_phone": "",
+        "emergency_beds": null,
+        "icu_beds": null,
+        "general_beds": null,
+        "oxygen_available": null,
+        "ambulance_available": null,
+        "status": "unreported",
+        "last_updated": null,
+        "updated_by": null,
+        "listing_status": "published",
+        "location_confidence": "approximate",
+        "hefra_licence": "",
+        "suggested_by": "",
+        "notes": "Coordinates approximate. Verify against the site and the HeFRA licensed register before operational use.",
+        "marker-color": "#888780",
+        "stroke": "#5F5E5A",
+        "fill": "#888780",
+        "marker-size": "medium",
+        "stroke-width": 1,
+        "fill-opacity": 0.7
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.2011,
+          5.5975
+        ]
+      },
+      "properties": {
+        "hospital_name": "Maamobi General Hospital",
+        "hospital_type": "Government",
+        "region_area": "Maamobi",
+        "address": "Maamobi, Accra",
+        "main_phone": "",
+        "updater_phone": "",
+        "emergency_beds": null,
+        "icu_beds": null,
+        "general_beds": null,
+        "oxygen_available": null,
+        "ambulance_available": null,
+        "status": "unreported",
+        "last_updated": null,
+        "updated_by": null,
+        "listing_status": "published",
+        "location_confidence": "approximate",
+        "hefra_licence": "",
+        "suggested_by": "",
+        "notes": "Coordinates approximate. Verify against the site and the HeFRA licensed register before operational use.",
+        "marker-color": "#888780",
+        "stroke": "#5F5E5A",
+        "fill": "#888780",
+        "marker-size": "medium",
+        "stroke-width": 1,
+        "fill-opacity": 0.7
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0143,
+          5.6698
+        ]
+      },
+      "properties": {
+        "hospital_name": "Tema General Hospital",
+        "hospital_type": "Government",
+        "region_area": "Tema",
+        "address": "Hospital Road, Tema",
+        "main_phone": "",
+        "updater_phone": "",
+        "emergency_beds": null,
+        "icu_beds": null,
+        "general_beds": null,
+        "oxygen_available": null,
+        "ambulance_available": null,
+        "status": "unreported",
+        "last_updated": null,
+        "updated_by": null,
+        "listing_status": "published",
+        "location_confidence": "approximate",
+        "hefra_licence": "",
+        "suggested_by": "",
+        "notes": "Coordinates approximate. Verify against the site and the HeFRA licensed register before operational use.",
+        "marker-color": "#888780",
+        "stroke": "#5F5E5A",
+        "fill": "#888780",
+        "marker-size": "medium",
+        "stroke-width": 1,
+        "fill-opacity": 0.7
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.1878,
+          5.705
+        ]
+      },
+      "properties": {
+        "hospital_name": "Ga East Municipal Hospital",
+        "hospital_type": "Government",
+        "region_area": "Abokobi",
+        "address": "Abokobi, Ga East, Accra",
+        "main_phone": "",
+        "updater_phone": "",
+        "emergency_beds": null,
+        "icu_beds": null,
+        "general_beds": null,
+        "oxygen_available": null,
+        "ambulance_available": null,
+        "status": "unreported",
+        "last_updated": null,
+        "updated_by": null,
+        "listing_status": "published",
+        "location_confidence": "approximate",
+        "hefra_licence": "",
+        "suggested_by": "",
+        "notes": "Coordinates approximate. Verify against the site and the HeFRA licensed register before operational use.",
+        "marker-color": "#888780",
+        "stroke": "#5F5E5A",
+        "fill": "#888780",
+        "marker-size": "medium",
+        "stroke-width": 1,
+        "fill-opacity": 0.7
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.2089,
+          5.5528
+        ]
+      },
+      "properties": {
+        "hospital_name": "Princess Marie Louise Children's Hospital",
+        "hospital_type": "Government",
+        "region_area": "Adabraka",
+        "address": "Castle Road, Adabraka, Accra",
+        "main_phone": "",
+        "updater_phone": "",
+        "emergency_beds": null,
+        "icu_beds": null,
+        "general_beds": null,
+        "oxygen_available": null,
+        "ambulance_available": null,
+        "status": "unreported",
+        "last_updated": null,
+        "updated_by": null,
+        "listing_status": "published",
+        "location_confidence": "approximate",
+        "hefra_licence": "",
+        "suggested_by": "",
+        "notes": "Paediatric specialist hospital. Coordinates approximate. Verify against the site and the HeFRA licensed register before operational use.",
+        "marker-color": "#888780",
+        "stroke": "#5F5E5A",
+        "fill": "#888780",
+        "marker-size": "medium",
+        "stroke-width": 1,
+        "fill-opacity": 0.7
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.2358,
+          5.5386
+        ]
+      },
+      "properties": {
+        "hospital_name": "Mamprobi Polyclinic",
+        "hospital_type": "Government",
+        "region_area": "Mamprobi",
+        "address": "Mamprobi, Accra",
+        "main_phone": "",
+        "updater_phone": "",
+        "emergency_beds": null,
+        "icu_beds": null,
+        "general_beds": null,
+        "oxygen_available": null,
+        "ambulance_available": null,
+        "status": "unreported",
+        "last_updated": null,
+        "updated_by": null,
+        "listing_status": "published",
+        "location_confidence": "approximate",
+        "hefra_licence": "",
+        "suggested_by": "",
+        "notes": "Coordinates approximate. Verify against the site and the HeFRA licensed register before operational use.",
+        "marker-color": "#888780",
+        "stroke": "#5F5E5A",
+        "fill": "#888780",
+        "marker-size": "medium",
+        "stroke-width": 1,
+        "fill-opacity": 0.7
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.2361,
+          5.5644
+        ]
+      },
+      "properties": {
+        "hospital_name": "Kaneshie Polyclinic",
+        "hospital_type": "Government",
+        "region_area": "Kaneshie",
+        "address": "Kaneshie, Accra",
+        "main_phone": "",
+        "updater_phone": "",
+        "emergency_beds": null,
+        "icu_beds": null,
+        "general_beds": null,
+        "oxygen_available": null,
+        "ambulance_available": null,
+        "status": "unreported",
+        "last_updated": null,
+        "updated_by": null,
+        "listing_status": "published",
+        "location_confidence": "approximate",
+        "hefra_licence": "",
+        "suggested_by": "",
+        "notes": "Coordinates approximate. Verify against the site and the HeFRA licensed register before operational use.",
+        "marker-color": "#888780",
+        "stroke": "#5F5E5A",
+        "fill": "#888780",
+        "marker-size": "medium",
+        "stroke-width": 1,
+        "fill-opacity": 0.7
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.26,
+          5.5442
+        ]
+      },
+      "properties": {
+        "hospital_name": "Dansoman Polyclinic",
+        "hospital_type": "Government",
+        "region_area": "Dansoman",
+        "address": "Dansoman, Accra",
+        "main_phone": "",
+        "updater_phone": "",
+        "emergency_beds": null,
+        "icu_beds": null,
+        "general_beds": null,
+        "oxygen_available": null,
+        "ambulance_available": null,
+        "status": "unreported",
+        "last_updated": null,
+        "updated_by": null,
+        "listing_status": "published",
+        "location_confidence": "approximate",
+        "hefra_licence": "",
+        "suggested_by": "",
+        "notes": "Coordinates approximate. Verify against the site and the HeFRA licensed register before operational use.",
+        "marker-color": "#888780",
+        "stroke": "#5F5E5A",
+        "fill": "#888780",
+        "marker-size": "medium",
+        "stroke-width": 1,
+        "fill-opacity": 0.7
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.2094,
+          5.5589
+        ]
+      },
+      "properties": {
+        "hospital_name": "Adabraka Polyclinic",
+        "hospital_type": "Government",
+        "region_area": "Adabraka",
+        "address": "Adabraka, Accra",
+        "main_phone": "",
+        "updater_phone": "",
+        "emergency_beds": null,
+        "icu_beds": null,
+        "general_beds": null,
+        "oxygen_available": null,
+        "ambulance_available": null,
+        "status": "unreported",
+        "last_updated": null,
+        "updated_by": null,
+        "listing_status": "published",
+        "location_confidence": "approximate",
+        "hefra_licence": "",
+        "suggested_by": "",
+        "notes": "Coordinates approximate. Verify against the site and the HeFRA licensed register before operational use.",
+        "marker-color": "#888780",
+        "stroke": "#5F5E5A",
+        "fill": "#888780",
+        "marker-size": "medium",
+        "stroke-width": 1,
+        "fill-opacity": 0.7
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.1758,
+          5.5872
+        ]
+      },
+      "properties": {
+        "hospital_name": "The Bank Hospital",
+        "hospital_type": "Private",
+        "region_area": "Cantonments",
+        "address": "Cantonments, Accra",
+        "main_phone": "",
+        "updater_phone": "",
+        "emergency_beds": null,
+        "icu_beds": null,
+        "general_beds": null,
+        "oxygen_available": null,
+        "ambulance_available": null,
+        "status": "unreported",
+        "last_updated": null,
+        "updated_by": null,
+        "listing_status": "published",
+        "location_confidence": "approximate",
+        "hefra_licence": "",
+        "suggested_by": "",
+        "notes": "Coordinates approximate. Verify against the site and the HeFRA licensed register before operational use.",
+        "marker-color": "#888780",
+        "stroke": "#5F5E5A",
+        "fill": "#888780",
+        "marker-size": "medium",
+        "stroke-width": 1,
+        "fill-opacity": 0.7
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.1786,
+          5.6047
+        ]
+      },
+      "properties": {
+        "hospital_name": "Euracare Advanced Diagnostic and Heart Centre",
+        "hospital_type": "Private",
+        "region_area": "Airport Residential Area",
+        "address": "Airport Residential Area, Accra",
+        "main_phone": "",
+        "updater_phone": "",
+        "emergency_beds": null,
+        "icu_beds": null,
+        "general_beds": null,
+        "oxygen_available": null,
+        "ambulance_available": null,
+        "status": "unreported",
+        "last_updated": null,
+        "updated_by": null,
+        "listing_status": "published",
+        "location_confidence": "approximate",
+        "hefra_licence": "",
+        "suggested_by": "",
+        "notes": "Coordinates approximate. Verify against the site and the HeFRA licensed register before operational use.",
+        "marker-color": "#888780",
+        "stroke": "#5F5E5A",
+        "fill": "#888780",
+        "marker-size": "medium",
+        "stroke-width": 1,
+        "fill-opacity": 0.7
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.2372,
+          5.5697
+        ]
+      },
+      "properties": {
+        "hospital_name": "C&J Medicare Hospital",
+        "hospital_type": "Private",
+        "region_area": "Kaneshie",
+        "address": "Kaneshie, Accra",
+        "main_phone": "",
+        "updater_phone": "",
+        "emergency_beds": null,
+        "icu_beds": null,
+        "general_beds": null,
+        "oxygen_available": null,
+        "ambulance_available": null,
+        "status": "unreported",
+        "last_updated": null,
+        "updated_by": null,
+        "listing_status": "published",
+        "location_confidence": "approximate",
+        "hefra_licence": "",
+        "suggested_by": "",
+        "notes": "Coordinates approximate. Verify against the site and the HeFRA licensed register before operational use.",
+        "marker-color": "#888780",
+        "stroke": "#5F5E5A",
+        "fill": "#888780",
+        "marker-size": "medium",
+        "stroke-width": 1,
+        "fill-opacity": 0.7
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.1667,
+          5.6836
+        ]
+      },
+      "properties": {
+        "hospital_name": "Pentecost Hospital",
+        "hospital_type": "Private",
+        "region_area": "Madina",
+        "address": "Madina, Accra",
+        "main_phone": "",
+        "updater_phone": "",
+        "emergency_beds": null,
+        "icu_beds": null,
+        "general_beds": null,
+        "oxygen_available": null,
+        "ambulance_available": null,
+        "status": "unreported",
+        "last_updated": null,
+        "updated_by": null,
+        "listing_status": "published",
+        "location_confidence": "approximate",
+        "hefra_licence": "",
+        "suggested_by": "",
+        "notes": "Coordinates approximate. Verify against the site and the HeFRA licensed register before operational use.",
+        "marker-color": "#888780",
+        "stroke": "#5F5E5A",
+        "fill": "#888780",
+        "marker-size": "medium",
+        "stroke-width": 1,
+        "fill-opacity": 0.7
+      }
+    }
+  ]
+}

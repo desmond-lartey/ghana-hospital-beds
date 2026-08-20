@@ -116,6 +116,7 @@ li.row{
 .tag.unreported{color:var(--none);background:var(--none-bg)}
 
 .meta{color:var(--ink-3);font-size:13px;margin:2px 0 0}
+.approx{color:var(--wait);font-size:12px;margin:5px 0 0;font-weight:500}
 
 .readout{display:flex;flex-wrap:wrap;gap:18px;margin:12px 0 0}
 .cell .k{
@@ -191,6 +192,7 @@ footer a{color:var(--ink-2)}
     Built with <a href="https://geolibre.app/">GeoLibre</a>, <a href="https://getgeolens.com/">GeoLens</a>,
     MapLibre GL JS and OpenFreeMap. Open source, self-hosted, no tracking.
     Hospital staff: <a href="./staff.html">report your bed counts</a>.
+    Missing a hospital? <a href="./suggest.html">Suggest one</a>.
   </p>
   <p id="disclaimer">
     This is a school project and is not an official emergency service. In an emergency, call the
@@ -294,6 +296,8 @@ function render(){
         '<p class="meta">' + esc(p.hospital_type || "") +
           (p.region_area ? " &middot; " + esc(p.region_area) : "") +
           (p.address ? " &middot; " + esc(p.address) : "") + '</p>' +
+        (p.location_confidence === "verified" ? "" :
+          '<p class="approx">Location not yet verified. Call before travelling.</p>') +
         '<div class="readout">' +
           cell("Emergency", num(p.emergency_beds)) +
           cell("ICU", num(p.icu_beds)) +
@@ -375,7 +379,9 @@ function initMap(){
 fetch("./data/hospitals.geojson")
   .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
   .then(data => {
-    FEATURES = (data.features || []).filter(f => f && f.geometry && f.geometry.coordinates);
+    FEATURES = (data.features || []).filter(f =>
+      f && f.geometry && f.geometry.coordinates &&
+      f.properties.listing_status !== "pending_review");
 
     const reported = FEATURES.filter(f => statusOf(f.properties) !== "unreported");
     const stamps = FEATURES.map(f => f.properties.last_updated).filter(Boolean).sort();

@@ -94,9 +94,33 @@ Per-feature colouring requires no separate style file. GeoLibre renders a vector
 
 ---
 
+## Listing model
+
+Adding a hospital and reporting its bed counts are separate privileges, because they carry different risks.
+
+| Tier | Who | Can do | Cannot do |
+|---|---|---|---|
+| Public | Anyone | Suggest a facility for review | Publish it, or alter any published record |
+| Administrator | Project operator | Verify against the HeFRA register and publish | Report bed counts on a hospital's behalf |
+| Accredited staff | Reporter at a listed hospital | Report bed counts for their own hospital | Edit any other hospital |
+
+A suggestion enters the dataset with `listing_status: pending_review` and is filtered out of the public map until an administrator publishes it. Nothing a member of the public submits reaches a dispatcher unreviewed.
+
+### Why suggestions are gated
+
+The Health Institutions and Facilities Act, 2011 (Act 829) established the Health Facilities Regulatory Agency (HeFRA), which licenses and monitors health facilities in Ghana. Section 11(1) provides that a person shall not operate a facility unless it is licensed under the Act. HeFRA maintains the register of licensed facilities, which is the authority this project verifies against.
+
+Two failure modes justify the review step. An ambulance routed to a facility that does not exist, or cannot provide the care needed, loses time measured in minutes. And publishing an unlicensed facility would direct patients to an operation that is not lawfully permitted to treat them. Neither risk is acceptable in exchange for the convenience of open self-registration.
+
+### Location confidence
+
+Each record carries a `location_confidence` value of `verified`, `approximate`, or `unverified`. Records that are not verified display a warning on the public map advising the reader to call before travelling. Coordinate errors, particularly latitude and longitude transposed, are the most consequential data fault in the system, so the suggestion form rejects any point outside the Greater Accra bounding box before submission.
+
+---
+
 ## Data
 
-`data/hospitals.geojson` contains eight Accra hospitals in standard GeoJSON.
+`data/hospitals.geojson` contains twenty-two Accra hospitals in standard GeoJSON.
 
 Identity fields, covering name, type, area, address, and published phone numbers, are sourced from public directories and reference sources. Bed, ICU, and oxygen figures are null and marked as not reported, because these figures are not public information and must originate from the hospitals themselves.
 
@@ -128,7 +152,15 @@ Failure states name both the cause and the remedy. A permissions error directs t
 
 ---
 
-<!-- ## Deployment
+### Suggestion form
+
+`site/suggest.html` accepts facility proposals from anyone. It validates required fields, checks coordinates against the Greater Accra bounding box, and offers device geolocation as an alternative to typing coordinates by hand.
+
+Submissions are filed to a review server when one is configured. Without a server, the form produces a structured record and a prefilled repository issue, so the suggestion route works on static hosting from the first day.
+
+---
+
+## Deployment
 
 ### Static site, no server
 
@@ -170,7 +202,7 @@ A staged path avoids blocking the map on infrastructure:
 
 Serving the application and its data from one origin removes the CORS and cookie problems that arise when they are split across hosts.
 
-GitHub Pages takes a `CNAME` file in the repository containing the domain, plus a DNS CNAME record pointing at `<username>.github.io`. -->
+GitHub Pages takes a `CNAME` file in the repository containing the domain, plus a DNS CNAME record pointing at `<username>.github.io`. The GeoLibre project follows this same pattern: its plugin registry is published to GitHub Pages at `plugins.geolibre.app`.
 
 ---
 
@@ -200,6 +232,8 @@ accra-beds/
 ├── site/
 │   ├── index.html              Public bed finder
 │   ├── staff.html              Staff reporting form
+│   ├── suggest.html            Public facility suggestion form
+│   ├── favicon.svg             Site icon
 │   └── data/                   Dataset copy served by Pages
 ├── geolens/
 │   └── SETUP.md                Server installation and configuration
