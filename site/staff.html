@@ -175,6 +175,9 @@ const GEOLENS_SERVER = "https://verbose-trout-x75xgrj7xwj2p6gq-8080.app.github.d
 // survives a rename.
 const GEOLENS_DATASET = "300ca84f-5b2d-46c6-ad5a-bc030c05bc4e";
 
+// How many features to request at once. GeoLens caps this; 100 is a safe value.
+const PAGE_SIZE = 100;
+
 // Thresholds must match data/update_status.py
 const LIMITED = { emergency: 3, icu: 2, general: 5 };
 const COLOR = {
@@ -272,6 +275,21 @@ async function signIn(){
   }
 }
 
+// FastAPI returns a structured explanation on 4xx. Pull it out so errors say
+// what is actually wrong rather than only showing a status code.
+async function serverDetail(res){
+  try {
+    const body = await res.clone().json();
+    if (typeof body.detail === "string") return body.detail;
+    if (Array.isArray(body.detail))
+      return body.detail
+        .map(d => (d.loc ? d.loc.filter(x => x !== "query" && x !== "path").join(".") + ": " : "") + d.msg)
+        .join("; ");
+    if (body.title || body.message) return body.title || body.message;
+  } catch { /* body was not JSON */ }
+  return "";
+}
+
 async function api(path, options){
   const res = await fetch(server + path, {
     ...options,
@@ -284,11 +302,15 @@ async function api(path, options){
 async function loadHospitals(){
   collectionId = GEOLENS_DATASET;
 
-  const items = await api("/api/datasets/" + encodeURIComponent(collectionId) + "/features?limit=500");
+  const items = await api("/api/datasets/" + encodeURIComponent(collectionId) +
+                          "/features?limit=" + PAGE_SIZE);
   if (items.status === 404)
     throw new Error("Dataset " + collectionId + " was not found on this server. " +
                     "Check GEOLENS_DATASET in this page against the dataset URL in GeoLens.");
-  if (!items.ok) throw new Error("Could not read hospitals (" + items.status + ").");
+  if (!items.ok) {
+    const why = await serverDetail(items);
+    throw new Error("Could not read hospitals (" + items.status + ")." + (why ? " " + why : ""));
+  }
   const fc = await items.json();
   features = fc.features || [];
   if (!features.length)
@@ -368,7 +390,10 @@ async function submitReport(){
       throw new Error("You do not have permission to edit this hospital. Ask an administrator to grant your account editor access to it.");
     if (res.status === 404 || res.status === 405)
       throw new Error("This GeoLens server does not accept edits at that address. Open " + server + "/api/docs to confirm the feature-update route for your version.");
-    if (!res.ok) throw new Error("The server rejected the report (" + res.status + ").");
+    if (!res.ok) {
+      const why = await serverDetail(res);
+      throw new Error("The server rejected the report (" + res.status + ")." + (why ? " " + why : ""));
+    }
 
     f.properties = props;
     show("out", "Reported " + LABEL[status].toLowerCase() + " for " +
