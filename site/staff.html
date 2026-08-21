@@ -170,6 +170,11 @@ footer a{color:var(--ink-2)}
 // server moves; nothing else in the page needs editing.
 const GEOLENS_SERVER = "https://verbose-trout-x75xgrj7xwj2p6gq-8080.app.github.dev";
 
+// The dataset holding the hospital records. Take this from the GeoLens dataset
+// URL: /datasets/<this-value>. The slug ("hospitals") also works, but the UUID
+// survives a rename.
+const GEOLENS_DATASET = "300ca84f-5b2d-46c6-ad5a-bc030c05bc4e";
+
 // Thresholds must match data/update_status.py
 const LIMITED = { emergency: 3, icu: 2, general: 5 };
 const COLOR = {
@@ -277,18 +282,17 @@ async function api(path, options){
 }
 
 async function loadHospitals(){
-  // Find the hospitals dataset in the catalog, then read its features.
-  const search = await api("/api/search/datasets/?q=hospital%20beds&limit=5");
-  if (!search.ok) throw new Error("Could not read the dataset catalog (" + search.status + ").");
-  const catalog = await search.json();
-  const hit = (catalog.features || [])[0];
-  if (!hit) throw new Error("No hospital dataset found on this server. Publish hospitals.geojson first.");
-  collectionId = hit.id;
+  collectionId = GEOLENS_DATASET;
 
   const items = await api("/api/datasets/" + encodeURIComponent(collectionId) + "/features?limit=500");
+  if (items.status === 404)
+    throw new Error("Dataset " + collectionId + " was not found on this server. " +
+                    "Check GEOLENS_DATASET in this page against the dataset URL in GeoLens.");
   if (!items.ok) throw new Error("Could not read hospitals (" + items.status + ").");
   const fc = await items.json();
   features = fc.features || [];
+  if (!features.length)
+    throw new Error("That dataset has no hospital records in it.");
 
   const select = $("hospital");
   select.innerHTML = features.map((f, idx) =>
