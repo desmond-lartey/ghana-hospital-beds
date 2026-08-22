@@ -195,6 +195,8 @@ let token = null;
 let server = "";
 let collectionId = null;
 let features = [];
+// "-" matches the GeoJSON source, "_" matches a Postgres-backed dataset.
+let STYLE_KEY_SEP = "-";
 
 const $ = id => document.getElementById(id);
 
@@ -316,6 +318,11 @@ async function loadHospitals(){
   if (!features.length)
     throw new Error("That dataset has no hospital records in it.");
 
+  // Detect the style-column spelling once, from the loaded records.
+  const sample = features[0] && features[0].properties ? features[0].properties : {};
+  if ("marker_color" in sample) STYLE_KEY_SEP = "_";
+  else if ("marker-color" in sample) STYLE_KEY_SEP = "-";
+
   const select = $("hospital");
   select.innerHTML = features.map((f, idx) =>
     '<option value="' + idx + '">' +
@@ -365,9 +372,12 @@ async function submitReport(){
     status,
     last_updated: new Date().toISOString(),
     updated_by: $("by").value.trim(),
-    "marker-color": COLOR[status].hex,
-    stroke: COLOR[status].stroke,
-    fill: COLOR[status].hex
+    // The GeoJSON file carries simplestyle keys with hyphens, but Postgres
+    // cannot take a hyphen in a column name, so GeoLens renames them on import.
+    // Write whichever spelling this dataset actually uses.
+    ...(STYLE_KEY_SEP === "-"
+      ? { "marker-color": COLOR[status].hex, stroke: COLOR[status].stroke, fill: COLOR[status].hex }
+      : { marker_color: COLOR[status].hex, stroke: COLOR[status].stroke, fill: COLOR[status].hex })
   };
 
   $("btn-submit").disabled = true;
@@ -386,8 +396,15 @@ async function submitReport(){
       body: JSON.stringify({ type: "Feature", geometry: f.geometry, properties: props })
     });
 
-    if (res.status === 403)
-      throw new Error("You do not have permission to edit this hospital. Ask an administrator to grant your account editor access to it.");
+    if (res.status === 403) {
+      // GeoLens answers 403 both for a genuine permissions problem and for
+      // instance-wide editing being switched off. Its own message distinguishes
+      // them, so prefer that over guessing.
+      const why = await serverDetail(res);
+      throw new Error(why ||
+        "You do not have permission to edit this hospital. Ask an administrator " +
+        "to grant your account editor access to it.");
+    }
     if (res.status === 404 || res.status === 405)
       throw new Error("This GeoLens server does not accept edits at that address. Open " + server + "/api/docs to confirm the feature-update route for your version.");
     if (!res.ok) {
