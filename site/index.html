@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Accra hospital beds</title>
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./favicon.svg">
 <meta name="description" content="Live bed, ICU and oxygen availability across Accra hospitals. Check before you travel, and call ahead.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -114,6 +116,7 @@ li.row{
 .tag.unreported{color:var(--none);background:var(--none-bg)}
 
 .meta{color:var(--ink-3);font-size:13px;margin:2px 0 0}
+.approx{color:var(--wait);font-size:12px;margin:5px 0 0;font-weight:500}
 
 .readout{display:flex;flex-wrap:wrap;gap:18px;margin:12px 0 0}
 .cell .k{
@@ -144,8 +147,20 @@ li.row{
 .empty{padding:28px 16px;text-align:center;color:var(--ink-3);font-size:15px;
   border:1px dashed var(--rule-2);border-radius:10px}
 
-footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--rule);
+.actions-bar{display:flex;gap:10px;flex-wrap:wrap;margin:32px 0 0}
+.action{
+  flex:1 1 240px;display:flex;flex-direction:column;gap:2px;
+  padding:14px 16px;border:1px solid var(--rule-2);border-radius:10px;
+  background:var(--card);text-decoration:none;min-height:44px;
+  transition:border-color .12s;
+}
+.action:hover{border-color:var(--ink-3)}
+.action:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.action-title{font-family:Archivo,sans-serif;font-weight:600;font-size:15px;color:var(--ink)}
+.action-sub{font-size:13px;color:var(--ink-3)}
+footer{margin-top:28px;padding-top:18px;border-top:1px solid var(--rule);
   font-size:13px;color:var(--ink-3)}
+.credit{font-size:12px}
 footer a{color:var(--ink-2)}
 .maplibregl-popup-content{
   font-family:"IBM Plex Sans",sans-serif;font-size:13px;
@@ -184,15 +199,25 @@ footer a{color:var(--ink-2)}
 <p class="count" id="result-count"></p>
 <ul class="list" id="list"></ul>
 
+<section class="actions-bar" aria-label="Contribute to this map">
+  <a class="action" href="./staff.html">
+    <span class="action-title">Report bed counts</span>
+    <span class="action-sub">For hospital staff, twice daily</span>
+  </a>
+  <a class="action" href="./suggest.html">
+    <span class="action-title">Suggest a hospital</span>
+    <span class="action-sub">Missing a facility? Anyone can submit one</span>
+  </a>
+</section>
+
 <footer>
-  <p>
-    Built with <a href="https://geolibre.app/">GeoLibre</a>, <a href="https://getgeolens.com/">GeoLens</a>,
-    MapLibre GL JS and OpenFreeMap. Open source, self-hosted, no tracking.
-    Hospital staff: <a href="./staff.html">report your bed counts</a>.
-  </p>
   <p id="disclaimer">
     This is a school project and is not an official emergency service. In an emergency, call the
     Ghana National Ambulance Service on 112.
+  </p>
+  <p class="credit">
+    Built with <a href="https://geolibre.app/">GeoLibre</a>, <a href="https://getgeolens.com/">GeoLens</a>,
+    MapLibre GL JS and OpenFreeMap. Open source, self-hosted, no tracking.
   </p>
 </footer>
 
@@ -227,6 +252,20 @@ function num(v){
 function statusOf(p){
   const s = p.status;
   return STATUS_LABEL[s] ? s : "unreported";
+}
+
+// Google Maps URL API. Supplying only a destination makes Maps use the device's
+// current location as the origin and start routing immediately, so the driver
+// never types anything. On phones this opens the Google Maps app when installed.
+// The coordinates are authoritative; the hospital name rides along only as the
+// label shown in the app, so a wrong name cannot send anyone to the wrong place.
+function directionsUrl(lat, lon){
+  const params = new URLSearchParams({
+    api: "1",
+    destination: lat + "," + lon,
+    travelmode: "driving"
+  });
+  return "https://www.google.com/maps/dir/?" + params.toString();
 }
 
 function matches(p){
@@ -278,6 +317,8 @@ function render(){
         '<p class="meta">' + esc(p.hospital_type || "") +
           (p.region_area ? " &middot; " + esc(p.region_area) : "") +
           (p.address ? " &middot; " + esc(p.address) : "") + '</p>' +
+        (p.location_confidence === "verified" ? "" :
+          '<p class="approx">Location not yet verified. Call before travelling.</p>') +
         '<div class="readout">' +
           cell("Emergency", num(p.emergency_beds)) +
           cell("ICU", num(p.icu_beds)) +
@@ -288,8 +329,7 @@ function render(){
           '</span></div>' +
         '</div>' +
         '<div class="actions">' + callBtn +
-          '<a class="dir" target="_blank" rel="noopener" href="https://www.openstreetmap.org/?mlat=' +
-            lat + '&mlon=' + lon + '#map=17/' + lat + '/' + lon + '">Directions</a>' +
+          '<a class="dir" target="_blank" rel="noopener" href="' + directionsUrl(lat, lon) + '">Directions</a>' +
         '</div>' +
       '</div></li>';
   }).join("");
@@ -360,7 +400,9 @@ function initMap(){
 fetch("./data/hospitals.geojson")
   .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
   .then(data => {
-    FEATURES = (data.features || []).filter(f => f && f.geometry && f.geometry.coordinates);
+    FEATURES = (data.features || []).filter(f =>
+      f && f.geometry && f.geometry.coordinates &&
+      f.properties.listing_status !== "pending_review");
 
     const reported = FEATURES.filter(f => statusOf(f.properties) !== "unreported");
     const stamps = FEATURES.map(f => f.properties.last_updated).filter(Boolean).sort();
