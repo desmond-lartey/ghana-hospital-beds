@@ -195,8 +195,6 @@ let token = null;
 let server = "";
 let collectionId = null;
 let features = [];
-// "-" matches the GeoJSON source, "_" matches a Postgres-backed dataset.
-let STYLE_KEY_SEP = "-";
 
 const $ = id => document.getElementById(id);
 
@@ -205,6 +203,21 @@ function classify(e, i, g){
   if (e === 0 || i === 0 || g === 0) return "full";
   if (e <= LIMITED.emergency || i <= LIMITED.icu || g <= LIMITED.general) return "limited";
   return "available";
+}
+
+function styleColumns(existing, status){
+  const src = existing || {};
+  const wanted = {
+    "marker-color": COLOR[status].hex,
+    marker_color:   COLOR[status].hex,
+    stroke:         COLOR[status].stroke,
+    fill:           COLOR[status].hex
+  };
+  const out = {};
+  for (const [key, value] of Object.entries(wanted)) {
+    if (key in src) out[key] = value;
+  }
+  return out;
 }
 
 function readNum(id){
@@ -318,11 +331,6 @@ async function loadHospitals(){
   if (!features.length)
     throw new Error("That dataset has no hospital records in it.");
 
-  // Detect the style-column spelling once, from the loaded records.
-  const sample = features[0] && features[0].properties ? features[0].properties : {};
-  if ("marker_color" in sample) STYLE_KEY_SEP = "_";
-  else if ("marker-color" in sample) STYLE_KEY_SEP = "-";
-
   const select = $("hospital");
   select.innerHTML = features.map((f, idx) =>
     '<option value="' + idx + '">' +
@@ -372,13 +380,18 @@ async function submitReport(){
     status,
     last_updated: new Date().toISOString(),
     updated_by: $("by").value.trim(),
-    // The GeoJSON file carries simplestyle keys with hyphens, but Postgres
-    // cannot take a hyphen in a column name, so GeoLens renames them on import.
-    // Write whichever spelling this dataset actually uses.
-    ...(STYLE_KEY_SEP === "-"
-      ? { "marker-color": COLOR[status].hex, stroke: COLOR[status].stroke, fill: COLOR[status].hex }
-      : { marker_color: COLOR[status].hex, stroke: COLOR[status].stroke, fill: COLOR[status].hex })
+    // Style columns are written only where the record already has them.
+    // The GeoJSON source spells these with hyphens; a Postgres-backed dataset
+    // renames them with underscores, because a column name cannot hold a hyphen.
+    ...styleColumns(f.properties, status)
   };
+
+  // Never send a column the record does not have: the server rejects the whole
+  // write for one unknown key, and the colour is derivable from status anyway.
+  const known = new Set(Object.keys(f.properties || {}));
+  for (const key of Object.keys(props)) {
+    if (!known.has(key)) delete props[key];
+  }
 
   $("btn-submit").disabled = true;
   $("btn-submit").textContent = "Submitting\u2026";
