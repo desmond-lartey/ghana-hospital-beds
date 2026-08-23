@@ -207,11 +207,18 @@ footer a{color:var(--ink-2)}
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="./config.js"></script>
 <script>
-// Point this at a GeoLens server to file suggestions automatically.
-// Left blank, the form falls back to producing a record to submit by hand.
-const REVIEW_SERVER = "";
+// Suggestions go to Supabase, into a table separate from the published map.
+// A row level security policy allows anyone to insert and nobody to read back,
+// so an anonymous submission can never appear on the map and the submitter's
+// contact details stay private. Review happens in the Supabase dashboard.
 const ISSUE_URL = "https://github.com/desmond-lartey/ghana-hospital-beds/issues/new";
+
+function configured(){
+  return window.SUPABASE_URL && !window.SUPABASE_URL.includes("YOUR-PROJECT-REF");
+}
 
 // Greater Accra bounding box. Rejects coordinates that cannot be in the region,
 // which is the most common and most dangerous data-entry error.
@@ -284,14 +291,27 @@ async function submit(){
   $("btn-submit").textContent = "Submitting\u2026";
 
   try {
-    if (!REVIEW_SERVER) throw new Error("no-server");
+    if (!configured()) throw new Error("no-server");
 
-    const res = await fetch(REVIEW_SERVER + "/api/suggestions/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(record)
+    const client = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+    const p = record.properties;
+    const [lon, lat] = record.geometry.coordinates;
+
+    const { error } = await client.from("hospital_suggestions").insert({
+      name: p.hospital_name,
+      type: p.hospital_type,
+      region_area: p.region_area,
+      address: p.address,
+      main_phone: p.main_phone || null,
+      hefra_licence: p.hefra_licence || null,
+      latitude: lat,
+      longitude: lon,
+      submitted_by: p.suggested_by,
+      contact: p.suggested_contact,
+      relationship: p.suggested_relationship || null,
+      notes: p.notes || null
     });
-    if (!res.ok) throw new Error("rejected");
+    if (error) throw new Error(error.message);
 
     $("form").hidden = true;
     $("out").hidden = false;

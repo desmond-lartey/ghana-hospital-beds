@@ -28,7 +28,7 @@ PALETTE = {
 # Thresholds. Adjust to match the project brief.
 LIMITED_EMERGENCY = 3
 LIMITED_ICU = 2
-LIMITED_GENERAL = 5 
+LIMITED_GENERAL = 5
 
 
 def classify(props):

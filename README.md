@@ -2,7 +2,7 @@
 
 A live map of emergency, ICU, and general ward bed availability across hospitals in Accra. Hospital staff report their counts twice daily. Ambulance dispatchers, families, and clinic doctors search the map and call ahead before travelling.
 
-The system runs entirely on free and open-source software, self-hosted, with no metered usage, no per-seat charges, and no vendor account.
+The system runs on a static site and a managed database. Nothing needs to be kept running by hand, and both layers have free tiers sufficient for this workload.
 
 ---
 
@@ -11,11 +11,10 @@ The system runs entirely on free and open-source software, self-hosted, with no 
 - [Stack](#stack)
 - [Architecture](#architecture)
 - [Status model](#status-model)
+- [Access model](#access-model)
 - [Data](#data)
 - [Interfaces](#interfaces)
 - [Deployment](#deployment)
-- [Custom domain](#custom-domain)
-- [Roles and permissions](#roles-and-permissions)
 - [Repository layout](#repository-layout)
 - [Open questions](#open-questions)
 
@@ -23,21 +22,25 @@ The system runs entirely on free and open-source software, self-hosted, with no 
 
 ## Stack
 
-| Layer | Component | Licence | Role |
-|---|---|---|---|
-| Map UI | GeoLibre | MIT | Map rendering, layer styling, attribute table, desktop and mobile clients |
-| Map engine | MapLibre GL JS | BSD-3 | Vector rendering |
-| Data and API | GeoLens | Apache-2.0 | PostGIS catalog, OGC API endpoints, authentication, per-dataset permissions, audit log |
-| Database | PostGIS | Open source | Hospital records as standard spatial data |
-| Basemap | OpenFreeMap | Open | Background tiles, no API key |
+| Layer | Component | Role |
+|---|---|---|
+| Pages | GitHub Pages | Serves the three static pages and the fallback dataset |
+| Data | Supabase (Postgres + PostGIS) | Hospital records, authentication, row level security |
+| Map | MapLibre GL JS | Vector rendering |
+| Basemap | OpenFreeMap | Background tiles, no API key |
+| GIS (optional) | GeoLibre | Analysis and field capture over the same data |
 
-No component in this stack meters usage, charges per seat, or expires after a trial period.
+There is no application server. The browser talks to Postgres through Supabase's REST layer, and the database enforces who may do what.
 
 ### Design rationale
 
-Commercial no-code platforms are a natural fit for a project of this shape, and were evaluated first. They were rejected on a single criterion: continuity of service. A bed availability map is only useful if it is running at the moment someone needs it, and platforms whose free tiers are bounded by row counts, sync operations, or active users introduce a failure mode where the service degrades precisely as usage grows.
+An earlier version of this system used a self-hosted catalog running in a container. It worked, but it required a machine that never sleeps, and the failure mode was severe: when the host stopped, hospital staff could not report at all.
 
-GeoLens removes that constraint. It is a self-hosted catalog with its own authentication and role system, so the database, the permissions layer, and the API all run on infrastructure under direct control. Data is stored in standard PostGIS and exposed over open OGC APIs, which means the dataset remains portable and the system can be migrated without a rewrite.
+Two properties matter more than any feature here. The read path must survive anything, because someone opens this during an emergency. The write path must not depend on a machine somebody remembers to start.
+
+Static hosting satisfies the first: the map is files on a CDN, with no server to fail. A managed database satisfies the second, without anyone administering it.
+
+Row level security is what makes the missing server acceptable. Access rules live in the database rather than in application code, so the browser can hold a public key and still be unable to do anything the policies forbid.
 
 ---
 
@@ -45,27 +48,25 @@ GeoLens removes that constraint. It is a self-hosted catalog with its own authen
 
 ```mermaid
 flowchart LR
-  Staff[Hospital staff] --> Form[Staff reporting form<br/>site/staff.html]
   Public[Dispatchers, families,<br/>clinic doctors] --> Finder[Public bed finder<br/>site/index.html]
-  Admin[Administrators] --> GeoLibre[GeoLibre]
+  Staff[Hospital staff] --> Form[Staff reporting<br/>site/staff.html]
+  Anyone[Anyone] --> Suggest[Suggest a hospital<br/>site/suggest.html]
 
-  Form -->|PATCH, OGC API Features| API[GeoLens server<br/>auth, roles, permissions, audit]
-  GeoLibre -->|read and write| API
-  API --> DB[(PostGIS<br/>hospitals)]
+  Finder -->|read published| DB[(Supabase<br/>Postgres + PostGIS<br/>row level security)]
+  Form -->|update own hospital| DB
+  Suggest -->|insert, never read| DB
 
-  Finder -->|reads GeoJSON| Pages[GitHub Pages<br/>static dataset]
-  API -.->|publish| Pages
+  Finder -.->|when unreachable| File[Static GeoJSON<br/>on GitHub Pages]
+  DB --> GeoLibre[GeoLibre<br/>optional GIS]
 ```
 
-The public finder reads the dataset directly and requires no server. The staff form writes through GeoLens, which enforces which account may edit which hospital.
-
-GeoLibre provides an alternative interface over the same data. Its GeoLens integration connects to a self-hosted GeoLens server and adds datasets as signed vector tiles or OGC API Features GeoJSON, and writes edits back to the server feature by feature where the server permits it. This gives administrators the full GeoLibre environment, including the attribute table, styling panel, and browser-based geoprocessing tools, over the same records staff report into.
+The public map reads Supabase when it can and falls back to the dataset published alongside the page when it cannot. Live counts when the database is reachable, last-known counts when it is not, and never a blank map.
 
 ---
 
 ## Status model
 
-Each hospital carries one of four states, derived from its reported bed counts.
+Each hospital carries one of four states.
 
 | State | Condition | Meaning to the reader |
 |---|---|---|
@@ -74,180 +75,117 @@ Each hospital carries one of four states, derived from its reported bed counts.
 | Full | Zero beds in any category | No capacity |
 | Not reported | No counts submitted | Availability unknown |
 
-Default thresholds are three emergency beds, two ICU beds, and five general ward beds. These are configurable and should be set to match the operational definition agreed with participating hospitals.
+Status is a **generated column** in Postgres, computed from the bed counts and never written by a client. Earlier versions of this project duplicated the threshold logic across three files and relied on keeping them in step. Deriving it in the database removes that possibility: a client cannot report counts that disagree with the colour shown on the map.
 
-The not-reported state is deliberate. A hospital that has not submitted counts renders an em dash rather than a zero, because a zero is a claim about capacity and an absent report is not. Distinguishing the two prevents a dispatcher from reading missing data as a full ward.
+Default thresholds are three emergency beds, two ICU beds, and five general ward beds, set in `supabase/migrations/0001_core.sql`.
+
+The not-reported state is deliberate. A hospital that has not submitted counts renders a dash rather than a zero, because a zero is a claim about capacity and an absent report is not. Distinguishing the two prevents a dispatcher reading missing data as a full ward.
 
 Status colours use a colourblind-safe palette rather than pure red and green. Red-green colour blindness affects roughly eight percent of men, and the map is read under time pressure where misreading a colour has direct consequences.
 
-### Keeping status in sync
-
-Threshold logic exists in three places: `data/update_status.py`, `site/index.html`, and `site/staff.html`. The Python and JavaScript implementations are cross-checked against a shared set of test cases. Any change to thresholds must be applied to all three.
-
-Recompute status and marker colours across the dataset after a bulk edit:
-
-```bash
-python3 data/update_status.py data/hospitals.geojson
-```
-
-Per-feature colouring requires no separate style file. GeoLibre renders a vector layer per-feature when its features carry simplestyle-spec properties, reading each feature's own colour and falling back to the flat layer style.
-
 ---
 
-## Listing model
+## Access model
 
-Adding a hospital and reporting its bed counts are separate privileges, because they carry different risks.
+Three tiers, enforced by row level security rather than by application code.
 
 | Tier | Who | Can do | Cannot do |
 |---|---|---|---|
-| Public | Anyone | Suggest a facility for review | Publish it, or alter any published record |
-| Administrator | Project operator | Verify against the HeFRA register and publish | Report bed counts on a hospital's behalf |
-| Accredited staff | Reporter at a listed hospital | Report bed counts for their own hospital | Edit any other hospital |
+| Public | Anyone, signed in or not | Read published hospitals, submit a suggestion | Read suggestions, alter any hospital |
+| Staff | Account linked to a hospital | Update that hospital's counts | Touch any other hospital |
+| Administrator | Supabase dashboard | Publish, assign staff, review suggestions | — |
 
-A suggestion enters the dataset with `listing_status: pending_review` and is filtered out of the public map until an administrator publishes it. Nothing a member of the public submits reaches a dispatcher unreviewed.
+A staff account is two things: a user, and a row in `hospital_staff` linking it to a hospital. Without the link the account signs in but sees nothing and can change nothing. That is the intended behaviour, not a fault.
+
+Suggestions are held in a separate table that anyone may write to and nobody may read from. An anonymous submission therefore cannot reach the map, and the submitter's contact details are not publicly readable.
 
 ### Why suggestions are gated
 
-The Health Institutions and Facilities Act, 2011 (Act 829) established the Health Facilities Regulatory Agency (HeFRA), which licenses and monitors health facilities in Ghana. Section 11(1) provides that a person shall not operate a facility unless it is licensed under the Act. HeFRA maintains the register of licensed facilities, which is the authority this project verifies against.
+The Health Institutions and Facilities Act, 2011 (Act 829) established the Health Facilities Regulatory Agency (HeFRA), which licenses health facilities in Ghana. Section 11(1) provides that a facility may not operate unless licensed.
 
-Two failure modes justify the review step. An ambulance routed to a facility that does not exist, or cannot provide the care needed, loses time measured in minutes. And publishing an unlicensed facility would direct patients to an operation that is not lawfully permitted to treat them. Neither risk is acceptable in exchange for the convenience of open self-registration.
-
-### Location confidence
-
-Each record carries a `location_confidence` value of `verified`, `approximate`, or `unverified`. Records that are not verified display a warning on the public map advising the reader to call before travelling. Coordinate errors, particularly latitude and longitude transposed, are the most consequential data fault in the system, so the suggestion form rejects any point outside the Greater Accra bounding box before submission.
+Two failure modes justify review. An ambulance routed to a facility that does not exist, or cannot provide the care needed, loses time measured in minutes. And publishing an unlicensed facility would direct patients to an operation not lawfully permitted to treat them. Neither is an acceptable price for the convenience of open self-registration.
 
 ---
 
 ## Data
 
-`data/hospitals.geojson` contains twenty-two Accra hospitals in standard GeoJSON.
+`data/hospitals.geojson` holds twenty-two Accra hospitals and remains the source of truth for hospital identity. `supabase/seed.sql` is generated from it by `data/generate_seed.py`, so edits are made to the GeoJSON and the SQL is derived.
 
-Identity fields, covering name, type, area, address, and published phone numbers, are sourced from public directories and reference sources. Bed, ICU, and oxygen figures are null and marked as not reported, because these figures are not public information and must originate from the hospitals themselves.
+Identity fields come from public directories. Bed, ICU and oxygen figures are null, because those figures are not public and must originate from the hospitals themselves.
 
 ### Prerequisites for production use
 
-The dataset is a scaffold, not a deployable record set. Before the map carries real traffic:
-
-- Verify every coordinate against the actual building footprint. Several are approximate and flagged in the `notes` field of the affected features.
-- Confirm every phone number directly with the hospital. Several were not found in public sources and are blank.
+- Verify every coordinate against the actual building. Nineteen of twenty-two are approximate and flagged as such; the map warns readers on these.
+- Confirm every phone number with the hospital. Several were not found in public sources and are blank.
 - Obtain written agreement from each participating hospital before publishing its bed data.
 
-A map showing stale or incorrect bed counts during an emergency is worse than no map. The not-reported state exists so that missing data is visibly missing rather than silently rendered as zero.
+GeoLibre's field collection tool is suited to the coordinate work: it captures a point from device GPS with an optional photo, and works offline, so positions can be confirmed on site and exported back into the dataset.
 
 ---
 
 ## Interfaces
 
-### Public bed finder
+**`site/index.html`** is the public finder, requiring no account. Colour is reserved exclusively for status, so the most prominent thing on screen is whether a hospital can accept a patient. Bed counts render as monospace readouts with tabular figures, which keeps digits aligned when a list is scanned quickly. Directions open turn-by-turn routing from the reader's current location.
 
-`site/index.html` is a standalone page requiring no backend. It reads the GeoJSON dataset directly and provides a map, filters, status colouring, and tap-to-call.
+**`site/staff.html`** signs in against Supabase, lists only the hospitals the account may edit, prefills current counts, previews the resulting status before submission, and requires all three counts plus a reporter name. The session persists, so staff are not asked to sign in twice a day.
 
-Colour is reserved exclusively for status. The status band, the tag, and the map pin are the only chromatic elements on the page, so the single most prominent thing on screen is the answer to whether a hospital can accept a patient. Bed counts render as monospace readouts with tabular figures, which keeps digits aligned when a list is scanned quickly.
-
-### Staff reporting form
-
-`site/staff.html` authenticates against GeoLens, loads the hospitals the account is permitted to see, prefills current counts, previews the resulting status before submission, and validates that all three counts and a reporter name are present.
-
-Failure states name both the cause and the remedy. A permissions error directs the reporter to request editor access on that hospital. An endpoint mismatch directs them to the interactive API documentation on their own instance.
-
----
-
-### Suggestion form
-
-`site/suggest.html` accepts facility proposals from anyone. It validates required fields, checks coordinates against the Greater Accra bounding box, and offers device geolocation as an alternative to typing coordinates by hand.
-
-Submissions are filed to a review server when one is configured. Without a server, the form produces a structured record and a prefilled repository issue, so the suggestion route works on static hosting from the first day.
+**`site/suggest.html`** accepts facility proposals from anyone, validates coordinates against the Greater Accra bounding box, and offers device geolocation instead of typing coordinates by hand. Rejecting out-of-area points catches transposed latitude and longitude, which is the most consequential data-entry error in the system.
 
 ---
 
 ## Deployment
 
-### Static site, no server
+### Database
 
-Publishing `site/` to GitHub Pages produces a working, shareable map with no backend and no cost.
+See `supabase/SETUP.md`. Create the project, run the migration and seed, copy the project URL and anonymous key into `site/config.js`, then create staff accounts and assign them to hospitals.
+
+### Site
 
 1. Push the repository to GitHub.
 2. Under repository settings, in the Pages section, set the source to GitHub Actions.
 3. Push to `main`.
 
-The workflow at `.github/workflows/pages.yml` validates the dataset before deploying and fails the build if any hospital falls outside Greater Accra, preventing a bad coordinate from reaching the live map.
+The workflow validates the dataset before deploying and fails the build if any hospital falls outside Greater Accra, preventing a bad coordinate from reaching the live map.
 
-At this stage the map, filters, status colours, and tap-to-call are fully functional. Only staff reporting requires a server.
+The site works before the database is connected: with `config.js` unedited, the map serves the static dataset and the two forms explain that no database is configured.
 
-### GeoLens server, for staff reporting
+### Custom domain
 
-See `geolens/SETUP.md` for installation, dataset publication, granting each staff account editor access to its own hospital, and confirming the write endpoint against the running instance.
-
-### Opening the dataset in GeoLibre
-
-GeoLibre Web opens hosted data through a `data` query parameter accepting GeoJSON among other formats:
-
-```
-https://web.geolibre.app/?data=https://<username>.github.io/<repo>/data/hospitals.geojson
-```
-
-This provides the complete GeoLibre interface over the same dataset.
-
----
-
-## Custom domain
-
-GitHub Pages serves static files and can host `site/` and the dataset. It cannot host GeoLens, which requires a server, a database, and persistent storage.
-
-A staged path avoids blocking the map on infrastructure:
-
-1. GitHub Pages serves the public finder. Read-only, free, available immediately.
-2. GeoLens runs on a virtual machine, the dataset is published into it, and staff reporting goes live.
-3. The custom domain points at that server, with static pages served from the same origin.
-
-Serving the application and its data from one origin removes the CORS and cookie problems that arise when they are split across hosts.
-
-GitHub Pages takes a `CNAME` file in the repository containing the domain, plus a DNS CNAME record pointing at `<username>.github.io`. The GeoLibre project follows this same pattern: its plugin registry is published to GitHub Pages at `plugins.geolibre.app`.
-
----
-
-## Roles and permissions
-
-GeoLens provides role-based access control with per-dataset permissions, OAuth 2.0 and OIDC sign-in, and audit logging of administrative actions.
-
-| User | Role | Action | Frequency |
-|---|---|---|---|
-| Hospital staff | Editor, scoped to own hospital | Report bed counts | Twice daily |
-| Ambulance dispatchers | Viewer | Locate nearest available bed | During emergencies |
-| Families and private drivers | Public | Locate nearest hospital, call ahead | During emergencies |
-| Clinic doctors | Viewer | Identify referral hospitals with capacity | As needed |
-| System administrator | Admin | Manage hospitals, accounts, permissions | As needed |
-
-Audit logging is a safety requirement rather than a convenience feature. When a dispatcher acts on a bed count, the provenance of that number, specifically who reported it and when, is part of the record.
+GitHub Pages takes a `CNAME` file containing the domain, plus a DNS CNAME record pointing at `<username>.github.io`.
 
 ---
 
 ## Repository layout
 
 ```
-accra-beds/
+.
 ├── data/
-│   ├── hospitals.geojson       Hospital dataset
-│   └── update_status.py        Recomputes status and marker colours
+│   ├── hospitals.geojson       Source of truth for hospital identity
+│   ├── generate_seed.py        Derives seed.sql from the GeoJSON
+│   └── update_status.py        Recomputes status in the GeoJSON fallback
 ├── site/
 │   ├── index.html              Public bed finder
-│   ├── staff.html              Staff reporting form
-│   ├── suggest.html            Public facility suggestion form
-│   ├── favicon.svg             Site icon
+│   ├── staff.html              Staff reporting
+│   ├── suggest.html            Public facility suggestion
+│   ├── config.js               Supabase URL and anonymous key
+│   ├── favicon.svg
 │   └── data/                   Dataset copy served by Pages
-├── geolens/
-│   └── SETUP.md                Server installation and configuration
-└── .github/workflows/
-    └── pages.yml               Validation and deployment
+├── supabase/
+│   ├── migrations/0001_core.sql  Schema, policies, generated status
+│   ├── seed.sql                  Generated hospital records
+│   └── SETUP.md                  Dashboard walkthrough
+└── .github/workflows/pages.yml   Validation and deployment
 ```
 
 ---
 
 ## Open questions
 
-**Reporting interface.** Staff may report through the purpose-built form or through the GeoLibre attribute table. The attribute table requires no additional code; the form is more suitable for staff working on a phone at shift change.
+**Suggestion abuse.** The suggestion table accepts anonymous inserts with no rate limit. Acceptable while the project is small; a per-IP limit or a sign-in requirement would be needed at scale.
 
-**SMS reporting.** Carriers charge per message on every platform, making this the one component that cannot be free. It remains out of scope pending a decision on whether the cost is justified for hospitals without reliable data access.
+**Project pausing.** Supabase pauses free projects after a period of inactivity. Daily reporting keeps it awake, but a long university break might not.
+
+**SMS reporting.** Carriers charge per message on every platform, so this is the one component that cannot be free. Out of scope pending a decision on whether the cost is justified for hospitals without reliable data access.
 
 **Hospital participation.** Live bed data requires agreements with each participating hospital. No production deployment is possible until these are in place.
 
@@ -255,6 +193,6 @@ accra-beds/
 
 ## Licence and attribution
 
-Built with [GeoLibre](https://geolibre.app/) (MIT), [GeoLens](https://getgeolens.com/) (Apache-2.0), [MapLibre GL JS](https://maplibre.org/) (BSD-3), and [OpenFreeMap](https://openfreemap.org/) tiles.
+Built with [MapLibre GL JS](https://maplibre.org/) (BSD-3), [OpenFreeMap](https://openfreemap.org/) tiles, [Supabase](https://supabase.com/) (Apache-2.0), and optionally [GeoLibre](https://geolibre.app/) (MIT).
 
 This system is a student project and is not an official emergency service. In an emergency in Ghana, contact the National Ambulance Service on 112.

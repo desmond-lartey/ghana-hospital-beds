@@ -224,6 +224,8 @@ footer a{color:var(--ink-2)}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="./config.js"></script>
 <script>
 const STATUS_LABEL = {
   available: "Beds available",
@@ -397,12 +399,70 @@ function initMap(){
   }
 }
 
-fetch("./data/hospitals.geojson")
-  .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-  .then(data => {
-    FEATURES = (data.features || []).filter(f =>
-      f && f.geometry && f.geometry.coordinates &&
-      f.properties.listing_status !== "pending_review");
+// Rows from Supabase arrive flat. Reshape them into the same GeoJSON features
+// the rest of this page already understands, so one rendering path serves both
+// the live source and the fallback file.
+function rowsToFeatures(rows){
+  return rows
+    .filter(r => r.latitude != null && r.longitude != null)
+    .map(r => ({
+      type: "Feature",
+      geometry: { type: "Point", coordinates: [Number(r.longitude), Number(r.latitude)] },
+      properties: {
+        hospital_name: r.name,
+        hospital_type: r.type,
+        region_area: r.region_area,
+        address: r.address,
+        main_phone: r.main_phone,
+        emergency_beds: r.emergency_beds,
+        icu_beds: r.icu_beds,
+        general_beds: r.general_beds,
+        oxygen_available: r.oxygen_available,
+        ambulance_available: r.ambulance_available,
+        status: r.status,
+        last_updated: r.last_updated,
+        updated_by: r.updated_by,
+        notes: r.notes,
+        location_confidence: r.location_confidence,
+        listing_status: "published"
+      }
+    }));
+}
+
+async function loadFromSupabase(){
+  if (!window.SUPABASE_URL || window.SUPABASE_URL.includes("YOUR-PROJECT-REF")) return null;
+  const client = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+  const { data, error } = await client.from("public_hospitals").select("*");
+  if (error || !data || !data.length) return null;
+  return rowsToFeatures(data);
+}
+
+async function loadFromFile(){
+  const res = await fetch(window.FALLBACK_GEOJSON || "./data/hospitals.geojson");
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  const data = await res.json();
+  return (data.features || []).filter(f =>
+    f && f.geometry && f.geometry.coordinates &&
+    f.properties.listing_status !== "pending_review");
+}
+
+(async () => {
+  let live = false;
+  try {
+    const fromServer = await loadFromSupabase();
+    if (fromServer) { FEATURES = fromServer; live = true; }
+    else            { FEATURES = await loadFromFile(); }
+  } catch (err) {
+    try { FEATURES = await loadFromFile(); }
+    catch {
+      document.getElementById("stamp-updated").textContent = "Data unavailable";
+      document.getElementById("list").innerHTML =
+        '<li class="empty">The hospital data could not be loaded. Refresh the page to try again.</li>';
+      return;
+    }
+  }
+
+  {
 
     const reported = FEATURES.filter(f => statusOf(f.properties) !== "unreported");
     const stamps = FEATURES.map(f => f.properties.last_updated).filter(Boolean).sort();
@@ -416,14 +476,15 @@ fetch("./data/hospitals.geojson")
 
     if (reported.length) document.getElementById("notice").hidden = true;
 
+    if (!live) {
+      const note = document.getElementById("stamp-count");
+      note.textContent += " \u00b7 showing last published data";
+    }
+
     render();
     initMap();
-  })
-  .catch(() => {
-    document.getElementById("stamp-updated").textContent = "Data unavailable";
-    document.getElementById("list").innerHTML =
-      '<li class="empty">The hospital data could not be loaded. Refresh the page to try again.</li>';
-  });
+  }
+})();
 </script>
 </body>
 </html>
