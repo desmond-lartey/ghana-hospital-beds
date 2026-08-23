@@ -93,8 +93,8 @@ footer a{color:var(--ink-2)}
   <button id="btn-signin">Sign in</button>
   <p class="err" id="err-signin" hidden></p>
   <p class="hint">
-    Accounts are created by the system administrator and linked to one hospital.
-    If you do not have one yet, ask them to add you.
+    No account yet? <a href="./register.html">Request staff access</a>. An administrator
+    confirms your role before you can report.
   </p>
 </section>
 
@@ -256,9 +256,33 @@ async function loadHospitals(){
   if (linkError) throw new Error(linkError.message);
 
   if (!links || !links.length){
-    $("err-signin").textContent =
-      "Your account is not linked to a hospital yet. Ask the administrator to " +
-      "assign you to one.";
+    // No assignment yet. Distinguish "waiting for review" from "never asked",
+    // because the two need different things from the person reading this.
+    const { data: requests } = await client
+      .from("staff_requests")
+      .select("status, review_note")
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    const req = requests && requests[0];
+    let message;
+
+    if (!req) {
+      message = "This account has no access to any hospital yet. Request access first, " +
+                "then sign in again once it has been approved.";
+    } else if (req.status === "pending") {
+      message = "Your request is waiting for an administrator to review it. You will be " +
+                "able to report once it is approved.";
+    } else if (req.status === "rejected") {
+      message = "Your access request was not approved" +
+                (req.review_note ? ": " + req.review_note : ".") +
+                " Contact the administrator if you think this is a mistake.";
+    } else {
+      message = "Your request was approved but no hospital is linked to this account. " +
+                "Ask the administrator to check the assignment.";
+    }
+
+    $("err-signin").textContent = message;
     $("err-signin").hidden = false;
     await client.auth.signOut();
     return;

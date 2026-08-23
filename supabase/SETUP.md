@@ -45,28 +45,83 @@ The **service role key is different**. It bypasses row level security entirely. 
 
 ---
 
-## 5. Create a staff account
+## 5. Enable sign-ups and run the second migration
 
-Two steps, because an account and an assignment are separate things.
+Run `migrations/0002_staff_requests.sql`. This adds the request table, the approval
+functions, and a `pending_staff_requests` view for review.
 
-**Create the user.** In **Authentication → Users**, choose Add user, and set an email and password. Confirm the email immediately unless SMTP is configured.
+Then, in **Authentication → Sign In / Providers**, make sure email sign-ups are
+**enabled**. Staff create their own accounts through `register.html`.
 
-**Assign them to a hospital.** In the SQL Editor:
+Leaving sign-ups open is safe here because an account grants nothing on its own. Access
+comes from a row in `hospital_staff`, which only an approval writes. An unapproved
+account can sign in and do precisely nothing.
 
-```sql
-insert into hospital_staff (user_id, hospital_id)
-select
-  (select id from auth.users where email = 'nurse@korlebu.example'),
-  (select id from hospitals where name = 'Korle-Bu Teaching Hospital');
-```
-
-That single row is what the row level security policy checks. Without it, the account can sign in but will see no hospitals and can update nothing, which is the intended behaviour rather than a fault.
-
-To let one person report for several hospitals, insert one row per hospital.
+Also consider turning **off** "Confirm email" while testing, unless SMTP is configured.
+With confirmation on, an applicant must click a link before their request can be filed,
+and without SMTP that email never arrives.
 
 ---
 
-## 6. Review suggestions
+## 6. Approve staff requests
+
+Staff register at `register.html`, choosing their hospital and describing how their role
+can be confirmed. Nothing is granted until you approve it.
+
+To see what is waiting:
+
+```sql
+select * from pending_staff_requests;
+```
+
+That shows the applicant's name, email, job title, phone, the evidence they gave, and
+which hospital they claim to work at.
+
+**Confirm the person before approving.** The evidence field is the only thing between a
+stranger and a hospital's bed data. Call the hospital's main line, or the supervisor
+named, and confirm the person works there. An approved account can change what a
+dispatcher sees during an emergency.
+
+To approve:
+
+```sql
+select approve_staff_request('<request-id>', 'Confirmed by phone with ward sister');
+```
+
+That grants the access and records the decision in one transaction, so the two cannot
+come apart.
+
+To decline:
+
+```sql
+select reject_staff_request('<request-id>', 'Could not confirm employment');
+```
+
+The note is shown to the applicant when they next sign in, so give a reason they can act
+on.
+
+To see who currently has access to what:
+
+```sql
+select u.email, h.name as hospital, s.created_at
+from hospital_staff s
+join auth.users u on u.id = s.user_id
+join hospitals  h on h.id = s.hospital_id
+order by h.name;
+```
+
+To remove access:
+
+```sql
+delete from hospital_staff
+where user_id = (select id from auth.users where email = 'someone@example.com');
+```
+
+The account remains and can still sign in; it simply has no hospital again.
+
+---
+
+## 7. Review suggestions
 
 Public submissions land in `hospital_suggestions`. They are never visible on the map.
 

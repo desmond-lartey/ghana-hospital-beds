@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Request staff access</title>
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#14181d;--ink-2:#4a5560;--ink-3:#7b8792;
+  --paper:#f7f7f5;--card:#fff;--rule:#e0e2e0;--rule-2:#c9ccc9;
+  --go:#1d7a5f;--go-bg:#e4f2ec;--wait:#b06a06;--wait-bg:#fbeeda;
+  --stop:#b3322f;--stop-bg:#fbe8e7;--none-bg:#eceeed;
+}
+@media (prefers-color-scheme: dark){
+  :root{--ink:#eef1f2;--ink-2:#a8b2bb;--ink-3:#7d8791;
+    --paper:#101316;--card:#181c20;--rule:#2b3138;--rule-2:#3a424a;
+    --go:#5cc79f;--go-bg:#12312a;--wait:#e0a038;--wait-bg:#39290f;
+    --stop:#f0736f;--stop-bg:#3a1a19;--none-bg:#22272c;}
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:16px;line-height:1.5;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px 64px}
+header{padding:28px 0 18px;border-bottom:1px solid var(--rule)}
+h1{font-family:Archivo,sans-serif;font-weight:700;font-size:clamp(24px,5vw,32px);
+  letter-spacing:-.02em;line-height:1.1;margin:0 0 6px}
+.sub{color:var(--ink-2);font-size:15px;margin:0}
+h2{font-family:Archivo,sans-serif;font-weight:600;font-size:17px;margin:24px 0 12px;
+  letter-spacing:-.01em}
+label{display:block;font-size:13px;font-weight:500;color:var(--ink-2);margin:0 0 5px}
+input,select,textarea{width:100%;font:inherit;font-size:16px;padding:11px 12px;
+  border-radius:8px;border:1px solid var(--rule-2);background:var(--card);
+  color:var(--ink);min-height:44px}
+textarea{min-height:72px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--ink);outline-offset:1px;border-color:var(--ink)}
+.field{margin:0 0 14px}
+button{appearance:none;font:inherit;font-size:15px;font-weight:600;cursor:pointer;
+  padding:13px 20px;border-radius:8px;border:none;
+  background:var(--ink);color:var(--paper);width:100%;min-height:48px}
+button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.err{color:var(--stop);font-size:13px;margin:6px 0 0;font-weight:500}
+.msg{padding:14px;border-radius:8px;font-size:14px;margin:16px 0 0;line-height:1.6}
+.msg.ok{background:var(--go-bg);color:var(--go)}
+.msg.bad{background:var(--stop-bg);color:var(--stop)}
+.notice{margin:20px 0 0;padding:13px 15px;border:1px solid var(--rule-2);
+  border-radius:8px;background:var(--card);font-size:14px;color:var(--ink-2);line-height:1.6}
+.notice b{color:var(--ink);font-weight:600}
+.hint{font-size:13px;color:var(--ink-3);margin:6px 0 0}
+footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--rule);
+  font-size:13px;color:var(--ink-3)}
+footer a{color:var(--ink-2)}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Request staff access</h1>
+  <p class="sub">For hospital staff who will report bed counts. Approved by an administrator before it takes effect.</p>
+</header>
+
+<div class="notice">
+  <b>Access is not granted automatically.</b> An administrator confirms that you work at
+  the hospital you name before your account can change anything. Until then you can sign
+  in, but no hospital will appear and no report can be submitted.
+</div>
+
+<section id="form">
+  <h2>Your details</h2>
+
+  <div class="field">
+    <label for="name">Full name <span aria-hidden="true">*</span></label>
+    <input id="name" type="text" autocomplete="name">
+  </div>
+
+  <div class="field">
+    <label for="email">Email <span aria-hidden="true">*</span></label>
+    <input id="email" type="email" autocomplete="email" autocapitalize="none" inputmode="email">
+    <p class="hint">Use your work email if you have one. It makes verification quicker.</p>
+  </div>
+
+  <div class="field">
+    <label for="pass">Choose a password <span aria-hidden="true">*</span></label>
+    <input id="pass" type="password" autocomplete="new-password">
+    <p class="hint">At least eight characters.</p>
+  </div>
+
+  <h2>Where you work</h2>
+
+  <div class="field">
+    <label for="hospital">Hospital <span aria-hidden="true">*</span></label>
+    <select id="hospital"><option value="">Loading hospitals…</option></select>
+    <p class="hint">
+      Not listed? <a href="./suggest.html">Suggest the facility</a> first, then return here
+      once it has been added.
+    </p>
+  </div>
+
+  <div class="field">
+    <label for="title">Job title <span aria-hidden="true">*</span></label>
+    <input id="title" type="text" placeholder="Ward sister, records officer, duty nurse">
+  </div>
+
+  <div class="field">
+    <label for="phone">Work phone</label>
+    <input id="phone" type="tel" autocomplete="tel" placeholder="+233 ...">
+  </div>
+
+  <div class="field">
+    <label for="evidence">How can we confirm you work there? <span aria-hidden="true">*</span></label>
+    <textarea id="evidence" placeholder="Staff number, department, or the name and number of a supervisor who can confirm"></textarea>
+    <p class="hint">
+      Whatever is easiest to check. This is the only thing standing between a stranger and
+      a hospital's bed data, so it is read carefully.
+    </p>
+  </div>
+
+  <p class="err" id="err" hidden></p>
+  <div style="margin-top:6px"><button id="btn-submit">Submit request</button></div>
+  <div class="msg" id="out" hidden></div>
+</section>
+
+<footer>
+  <p>
+    Already approved? <a href="./staff.html">Sign in to report bed counts</a> &middot;
+    <a href="./index.html">Back to the map</a>
+  </p>
+</footer>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="./config.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+let client = null;
+
+function configured(){
+  return window.SUPABASE_URL && !window.SUPABASE_URL.includes("YOUR-PROJECT-REF");
+}
+
+function fail(message, focusId){
+  $("err").textContent = message;
+  $("err").hidden = false;
+  if (focusId) $(focusId).focus();
+  return false;
+}
+
+async function loadHospitals(){
+  // Published hospitals are readable without an account, so the list can be
+  // shown before anyone signs up.
+  const { data, error } = await client
+    .from("public_hospitals")
+    .select("id,name,region_area")
+    .order("name");
+
+  const select = $("hospital");
+  if (error || !data || !data.length){
+    select.innerHTML = '<option value="">Could not load hospitals</option>';
+    return;
+  }
+
+  select.innerHTML = '<option value="">Select your hospital</option>' +
+    data.map(h => '<option value="' + h.id + '">' +
+      String(h.name).replace(/[<>&]/g, "") +
+      (h.region_area ? " — " + String(h.region_area).replace(/[<>&]/g, "") : "") +
+      "</option>").join("");
+}
+
+async function submit(){
+  $("err").hidden = true;
+  $("out").hidden = true;
+
+  if (!configured())
+    return fail("This site is not connected to a database yet. Set SUPABASE_URL and SUPABASE_ANON_KEY in config.js.");
+
+  const name = $("name").value.trim();
+  const email = $("email").value.trim();
+  const password = $("pass").value;
+  const hospitalId = $("hospital").value;
+  const title = $("title").value.trim();
+  const evidence = $("evidence").value.trim();
+
+  if (!name)       return fail("Enter your full name.", "name");
+  if (!email)      return fail("Enter your email address.", "email");
+  if (password.length < 8) return fail("Choose a password of at least eight characters.", "pass");
+  if (!hospitalId) return fail("Select the hospital you work at.", "hospital");
+  if (!title)      return fail("Enter your job title.", "title");
+  if (!evidence)   return fail("Describe how we can confirm you work there.", "evidence");
+
+  $("btn-submit").disabled = true;
+  $("btn-submit").textContent = "Submitting\u2026";
+
+  try {
+    // Create the account, or sign in if this person already has one and is
+    // requesting access to a second hospital.
+    let { data: signUp, error: signUpError } =
+      await client.auth.signUp({ email, password });
+
+    if (signUpError && /already registered/i.test(signUpError.message)) {
+      const { error: signInError } =
+        await client.auth.signInWithPassword({ email, password });
+      if (signInError)
+        throw new Error("That email already has an account, and the password did not match it. " +
+                        "Sign in on the reporting page instead, or use a different email.");
+    } else if (signUpError) {
+      throw new Error(signUpError.message);
+    }
+
+    const { data: session } = await client.auth.getUser();
+    const userId = session?.user?.id;
+
+    // With email confirmation switched on there is no session yet, so the
+    // request cannot be filed until the address is confirmed.
+    if (!userId) {
+      $("form").hidden = true;
+      $("out").hidden = false;
+      $("out").className = "msg ok";
+      $("out").textContent =
+        "Check your email and confirm the address, then return to this page and submit " +
+        "the request again. Your account exists but is not yet usable.";
+      return;
+    }
+
+    const { error: insertError } = await client.from("staff_requests").insert({
+      user_id: userId,
+      hospital_id: hospitalId,
+      full_name: name,
+      job_title: title,
+      work_phone: $("phone").value.trim() || null,
+      evidence: evidence
+    });
+
+    if (insertError) {
+      if (insertError.code === "23505")
+        throw new Error("You have already requested access to this hospital. " +
+                        "It is waiting for an administrator to review it.");
+      throw new Error(insertError.message);
+    }
+
+    $("form").hidden = true;
+    $("out").hidden = false;
+    $("out").className = "msg ok";
+    $("out").textContent =
+      "Request submitted. An administrator will confirm your role before your account " +
+      "can report bed counts. You can sign in meanwhile, but no hospital will appear " +
+      "until the request is approved.";
+  } catch (err) {
+    $("out").hidden = false;
+    $("out").className = "msg bad";
+    $("out").textContent = err.message;
+  } finally {
+    $("btn-submit").disabled = false;
+    $("btn-submit").textContent = "Submit request";
+  }
+}
+
+$("btn-submit").addEventListener("click", submit);
+
+if (configured()){
+  client = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+  loadHospitals();
+} else {
+  $("hospital").innerHTML = '<option value="">No database configured</option>';
+}
+</script>
+</body>
+</html>
