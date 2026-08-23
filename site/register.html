@@ -11,16 +11,25 @@
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ink:#14181d;--ink-2:#4a5560;--ink-3:#7b8792;
-  --paper:#f7f7f5;--card:#fff;--rule:#e0e2e0;--rule-2:#c9ccc9;
-  --go:#1d7a5f;--go-bg:#e4f2ec;--wait:#b06a06;--wait-bg:#fbeeda;
-  --stop:#b3322f;--stop-bg:#fbe8e7;--none-bg:#eceeed;
+  /* Brand indigo. Chosen to sit far from green, amber and red in hue, so it
+     can never be mistaken for a status. Colour on this site means one thing. */
+  --brand:#2b3a7a;
+  --brand-2:#41539c;
+  --brand-tint:#eceef8;
+
+  --ink:#171a21;--ink-2:#4a5262;--ink-3:#7d8496;
+  --paper:#faf8f4;--card:#fff;--rule:#e6e2d9;--rule-2:#d3cec2;
+  --go:#1d7a5f;--go-bg:#e3f2ec;--wait:#b06a06;--wait-bg:#fbeeda;
+  --stop:#b3322f;--stop-bg:#fbe8e7;--none:#6e7780;--none-bg:#eeece6;
 }
 @media (prefers-color-scheme: dark){
-  :root{--ink:#eef1f2;--ink-2:#a8b2bb;--ink-3:#7d8791;
-    --paper:#101316;--card:#181c20;--rule:#2b3138;--rule-2:#3a424a;
+  :root{
+    --brand:#8f9fe0;--brand-2:#a9b6ea;--brand-tint:#1b2140;
+    --ink:#eceef3;--ink-2:#a6adbe;--ink-3:#7b8296;
+    --paper:#0f1116;--card:#171a21;--rule:#282d38;--rule-2:#39404e;
     --go:#5cc79f;--go-bg:#12312a;--wait:#e0a038;--wait-bg:#39290f;
-    --stop:#f0736f;--stop-bg:#3a1a19;--none-bg:#22272c;}
+    --stop:#f0736f;--stop-bg:#3a1a19;--none:#8b949d;--none-bg:#20242d;
+  }
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
@@ -43,7 +52,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--ink);outline-off
 .field{margin:0 0 14px}
 button{appearance:none;font:inherit;font-size:15px;font-weight:600;cursor:pointer;
   padding:13px 20px;border-radius:8px;border:none;
-  background:var(--ink);color:var(--paper);width:100%;min-height:48px}
+  background:var(--brand);color:#fff;width:100%;min-height:48px}
 button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .err{color:var(--stop);font-size:13px;margin:6px 0 0;font-weight:500}
 .msg{padding:14px;border-radius:8px;font-size:14px;margin:16px 0 0;line-height:1.6}

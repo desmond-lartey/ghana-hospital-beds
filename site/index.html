@@ -13,30 +13,24 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.min.css" rel="stylesheet">
 <style>
 :root{
-  --ink:#14181d;
-  --ink-2:#4a5560;
-  --ink-3:#7b8792;
-  --paper:#f7f7f5;
-  --card:#ffffff;
-  --rule:#e0e2e0;
-  --rule-2:#c9ccc9;
-  --go:#1d7a5f;
-  --go-bg:#e4f2ec;
-  --wait:#b06a06;
-  --wait-bg:#fbeeda;
-  --stop:#b3322f;
-  --stop-bg:#fbe8e7;
-  --none:#6e7780;
-  --none-bg:#eceeed;
+  /* Brand indigo. Chosen to sit far from green, amber and red in hue, so it
+     can never be mistaken for a status. Colour on this site means one thing. */
+  --brand:#2b3a7a;
+  --brand-2:#41539c;
+  --brand-tint:#eceef8;
+
+  --ink:#171a21;--ink-2:#4a5262;--ink-3:#7d8496;
+  --paper:#faf8f4;--card:#fff;--rule:#e6e2d9;--rule-2:#d3cec2;
+  --go:#1d7a5f;--go-bg:#e3f2ec;--wait:#b06a06;--wait-bg:#fbeeda;
+  --stop:#b3322f;--stop-bg:#fbe8e7;--none:#6e7780;--none-bg:#eeece6;
 }
 @media (prefers-color-scheme: dark){
   :root{
-    --ink:#eef1f2; --ink-2:#a8b2bb; --ink-3:#7d8791;
-    --paper:#101316; --card:#181c20; --rule:#2b3138; --rule-2:#3a424a;
-    --go:#5cc79f; --go-bg:#12312a;
-    --wait:#e0a038; --wait-bg:#39290f;
-    --stop:#f0736f; --stop-bg:#3a1a19;
-    --none:#8b949d; --none-bg:#22272c;
+    --brand:#8f9fe0;--brand-2:#a9b6ea;--brand-tint:#1b2140;
+    --ink:#eceef3;--ink-2:#a6adbe;--ink-3:#7b8296;
+    --paper:#0f1116;--card:#171a21;--rule:#282d38;--rule-2:#39404e;
+    --go:#5cc79f;--go-bg:#12312a;--wait:#e0a038;--wait-bg:#39290f;
+    --stop:#f0736f;--stop-bg:#3a1a19;--none:#8b949d;--none-bg:#20242d;
   }
 }
 *{box-sizing:border-box}
@@ -49,7 +43,37 @@ body{
 }
 .wrap{max-width:920px;margin:0 auto;padding:0 16px 64px}
 
-header{padding:28px 0 18px;border-bottom:1px solid var(--rule)}
+header{
+  position:relative;padding:34px 0 22px;border-bottom:1px solid var(--rule);
+  overflow:hidden;
+}
+/* A quiet indigo wash behind the title. Decoration is kept to the header so it
+   cannot compete with the status colours further down the page. */
+header::before{
+  content:"";position:absolute;inset:-60% -30% auto -30%;height:220%;
+  background:radial-gradient(60% 50% at 20% 0%, var(--brand-tint) 0%, transparent 70%);
+  z-index:0;pointer-events:none;
+}
+header > *{position:relative;z-index:1}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:7px;margin:0 0 10px;
+  font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.09em;color:var(--brand);
+  background:var(--brand-tint);padding:5px 10px;border-radius:999px;
+}
+.eyebrow .pulse{
+  width:7px;height:7px;border-radius:50%;background:var(--go);flex:0 0 7px;
+  animation:pulse 2.4s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.jump{
+  display:inline-flex;align-items:center;gap:8px;margin-top:16px;
+  text-decoration:none;font-size:15px;font-weight:600;
+  padding:11px 20px;border-radius:10px;background:var(--brand);color:#fff;
+  min-height:44px;box-sizing:border-box;
+}
+.jump:hover{background:var(--brand-2)}
+.jump:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
 h1{
   font-family:Archivo,system-ui,sans-serif;
   font-weight:700; font-size:clamp(26px,5.2vw,38px);
@@ -81,7 +105,7 @@ h1{
   background:var(--card);color:var(--ink-2);transition:border-color .12s,color .12s;
 }
 .chip:hover{border-color:var(--ink-3)}
-.chip[aria-pressed="true"]{border-color:var(--ink);color:var(--ink);font-weight:600}
+.chip[aria-pressed="true"]{border-color:var(--brand);background:var(--brand-tint);color:var(--brand);font-weight:600}
 .chip:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 
 .count{
@@ -133,7 +157,7 @@ li.row{
 .call{
   display:inline-flex;align-items:center;gap:7px;text-decoration:none;
   font-size:14px;font-weight:600;padding:9px 16px;border-radius:8px;
-  background:var(--ink);color:var(--paper);min-height:40px;
+  background:var(--brand);color:#fff;min-height:40px;
 }
 .call:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .call[aria-disabled="true"]{background:var(--none-bg);color:var(--ink-3);pointer-events:none}
@@ -147,6 +171,37 @@ li.row{
 .empty{padding:28px 16px;text-align:center;color:var(--ink-3);font-size:15px;
   border:1px dashed var(--rule-2);border-radius:10px}
 
+/* Participating hospitals, scrolling. Purely informational: the map above
+   already carries every fact a reader needs, so nothing here is load-bearing. */
+.marquee{
+  margin:34px 0 0;padding:16px 0;border-top:1px solid var(--rule);
+  border-bottom:1px solid var(--rule);overflow:hidden;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);
+          mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);
+}
+.marquee-label{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3);
+  text-transform:uppercase;letter-spacing:.08em;margin:0 0 12px;
+}
+.marquee-track{
+  display:flex;gap:10px;width:max-content;
+  animation:slide 46s linear infinite;
+}
+.marquee:hover .marquee-track,
+.marquee:focus-within .marquee-track{animation-play-state:paused}
+@keyframes slide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.chip-h{
+  display:inline-flex;align-items:center;gap:8px;white-space:nowrap;
+  padding:9px 15px;border:1px solid var(--rule-2);border-radius:999px;
+  background:var(--card);font-size:14px;color:var(--ink-2);
+}
+.chip-h .tick{width:6px;height:6px;border-radius:50%;background:var(--brand);flex:0 0 6px}
+@media (prefers-reduced-motion: reduce){
+  .marquee-track{animation:none;flex-wrap:wrap;width:auto}
+  .marquee{-webkit-mask-image:none;mask-image:none}
+  .eyebrow .pulse{animation:none}
+}
+
 .actions-bar{display:flex;gap:10px;flex-wrap:wrap;margin:32px 0 0}
 .action{
   flex:1 1 240px;display:flex;flex-direction:column;gap:2px;
@@ -154,9 +209,9 @@ li.row{
   background:var(--card);text-decoration:none;min-height:44px;
   transition:border-color .12s;
 }
-.action:hover{border-color:var(--ink-3)}
+.action:hover{border-color:var(--brand);background:var(--brand-tint)}
 .action:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-.action-title{font-family:Archivo,sans-serif;font-weight:600;font-size:15px;color:var(--ink)}
+.action-title{font-family:Archivo,sans-serif;font-weight:600;font-size:15px;color:var(--brand)}
 .action-sub{font-size:13px;color:var(--ink-3)}
 footer{margin-top:28px;padding-top:18px;border-top:1px solid var(--rule);
   font-size:13px;color:var(--ink-3)}
@@ -173,8 +228,10 @@ footer a{color:var(--ink-2)}
 <div class="wrap">
 
 <header>
-  <h1>Accra hospital beds</h1>
-  <p class="sub">Emergency, ICU and general ward availability, reported by the hospitals themselves. Always call before you travel.</p>
+  <p class="eyebrow"><span class="pulse" aria-hidden="true"></span>Live availability &middot; Greater Accra</p>
+  <h1>Find a hospital bed<br>before you travel.</h1>
+  <p class="sub">Emergency, ICU and general ward availability, reported by the hospitals themselves. Always call ahead to confirm.</p>
+  <a class="jump" href="#map">See the map</a>
   <div class="stamp">
     <span id="stamp-updated">Loading data</span>
     <span id="stamp-count"></span>
@@ -187,7 +244,7 @@ footer a{color:var(--ink-2)}
   reports them, so every hospital currently shows as not reported.
 </p>
 
-<div id="map" role="region" aria-label="Map of Accra hospitals"></div>
+<div id="map" tabindex="-1" role="region" aria-label="Map of Accra hospitals"></div>
 
 <div class="controls" role="group" aria-label="Filter hospitals">
   <button class="chip" id="f-all" aria-pressed="true" data-filter="all">All hospitals</button>
@@ -198,6 +255,11 @@ footer a{color:var(--ink-2)}
 
 <p class="count" id="result-count"></p>
 <ul class="list" id="list"></ul>
+
+<section class="marquee" aria-label="Participating hospitals">
+  <p class="marquee-label">Hospitals listed</p>
+  <div class="marquee-track" id="marquee-track"></div>
+</section>
 
 <section class="actions-bar" aria-label="Contribute to this map">
   <a class="action" href="./staff.html">
@@ -485,10 +547,33 @@ async function loadFromFile(){
       note.textContent += " \u00b7 showing last published data";
     }
 
+    renderMarquee();
     render();
     initMap();
   }
 })();
+
+// Two identical runs of the list sit side by side, and the track scrolls by
+// exactly half its width, so the loop closes with no visible jump.
+function renderMarquee(){
+  const track = document.getElementById("marquee-track");
+  if (!track) return;
+
+  const names = FEATURES
+    .map(f => f.properties.hospital_name)
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b));
+
+  if (!names.length) { track.closest(".marquee").hidden = true; return; }
+
+  const run = names.map(n =>
+    '<span class="chip-h"><span class="tick" aria-hidden="true"></span>' +
+    esc(n) + "</span>").join("");
+
+  // The duplicate is hidden from assistive technology so names are not read twice.
+  track.innerHTML = run +
+    '<span aria-hidden="true" style="display:flex;gap:10px">' + run + "</span>";
+}
 </script>
 </body>
 </html>

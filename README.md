@@ -2,7 +2,8 @@
 
 A live map of emergency, ICU, and general ward bed availability across hospitals in Accra. Hospital staff report their counts twice daily. Ambulance dispatchers, families, and clinic doctors search the map and call ahead before travelling.
 
-The system runs on a static site and a managed database. Nothing needs to be kept running by hand, and both layers have free tiers sufficient for this workload.
+The system runs on a static site and a managed database. Nothing needs to be kept running by hand.
+[Check the Live app here:](https://ghana-hospital-beds.vercel.app/)
 
 ---
 
