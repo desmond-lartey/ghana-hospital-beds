@@ -121,38 +121,47 @@ The account remains and can still sign in; it simply has no hospital again.
 
 ---
 
-## 7. Review suggestions
+## 7. Review hospital suggestions
 
-Public submissions land in `hospital_suggestions`. They are never visible on the map.
+Run `migrations/0003_suggestion_review.sql` once, alongside the others.
 
-To see what is waiting:
-
-```sql
-select id, name, address, region_area, submitted_by, contact, created_at
-from hospital_suggestions
-where reviewed = false
-order by created_at;
-```
-
-Before publishing any of them, check the facility against the HeFRA licensed register. Under the Health Institutions and Facilities Act, 2011 (Act 829), a facility may not lawfully operate without a licence, and an ambulance routed to a place that cannot provide care loses time that patients do not have.
-
-To accept one:
+Public submissions land in `hospital_suggestions` and never appear on the map until
+approved. To see what is waiting:
 
 ```sql
-insert into hospitals (name, type, region_area, address, main_phone, location,
-                       listing_status, location_confidence, hefra_licence)
-select name, type, region_area, address, main_phone,
-       st_point(longitude, latitude)::geography,
-       'published', 'unverified', hefra_licence
-from hospital_suggestions
-where id = '<suggestion-id>';
-
-update hospital_suggestions set reviewed = true where id = '<suggestion-id>';
+select * from pending_hospital_suggestions;
 ```
 
-The new hospital is published with `location_confidence` set to `unverified`, so the map warns readers to call before travelling until someone has confirmed the coordinates on the ground.
+That shows the facility details, the coordinates given, and who submitted them with their
+contact details.
 
----
+To publish one:
+
+```sql
+select approve_hospital_suggestion('<suggestion-id>', 'Confirmed against HeFRA register');
+```
+
+The hospital is created, the suggestion is marked reviewed, and the note is kept with the
+submission, all in one transaction.
+
+If you have confirmed the coordinates yourself, say so and the map stops warning readers
+about the location:
+
+```sql
+select approve_hospital_suggestion('<suggestion-id>', 'Visited the site', 'verified');
+```
+
+Confidence defaults to `unverified`, so a newly published hospital tells readers to call
+before travelling until someone has checked the pin on the ground.
+
+To decline:
+
+```sql
+select reject_hospital_suggestion('<suggestion-id>', 'Could not confirm the facility exists');
+```
+
+The function refuses to publish a facility whose name already appears in `hospitals`,
+so a duplicate submission raises an error rather than putting two pins on the map.
 
 ## Things worth knowing
 
