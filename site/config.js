@@ -8,7 +8,7 @@
 //
 // The service role key is a different matter. It bypasses row level security
 // entirely, so it must never appear in this file or anywhere else the browser
-// can reach it.
+// can reach it. 
 
 window.SUPABASE_URL = "https://pbyzmmjxuyumoofziuen.supabase.co";
 window.SUPABASE_ANON_KEY = "sb_publishable_D8DcEEaApVpvfO3JNRTPEQ_E83bBgLF";
