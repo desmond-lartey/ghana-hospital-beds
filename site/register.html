@@ -212,7 +212,13 @@ async function submit(){
     // Create the account, or sign in if this person already has one and is
     // requesting access to a second hospital.
     let { data: signUp, error: signUpError } =
-      await client.auth.signUp({ email, password });
+      await client.auth.signUp({
+        email,
+        password,
+        // Kept on the user record so other pages can greet them by name
+        // without querying the request table.
+        options: { data: { full_name: name } }
+      });
 
     if (signUpError && /already registered/i.test(signUpError.message)) {
       const { error: signInError } =
