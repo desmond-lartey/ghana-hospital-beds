@@ -93,9 +93,11 @@ header{
 /* A quiet indigo wash behind the title. Decoration is kept to the header so it
    cannot compete with the status colours further down the page. */
 header::before{
-  content:"";position:absolute;inset:-60% -30% auto -30%;height:220%;
-  background:radial-gradient(60% 50% at 20% 0%, var(--brand-tint) 0%, transparent 70%);
-  z-index:0;pointer-events:none;
+  content:"";position:absolute;inset:-70% -35% auto -35%;height:240%;
+  background:
+    radial-gradient(46% 42% at 12% 4%,  var(--brand-tint) 0%, transparent 72%),
+    radial-gradient(38% 34% at 88% 0%,  var(--go-bg)      0%, transparent 70%);
+  z-index:0;pointer-events:none;opacity:.9;
 }
 header > *{position:relative;z-index:1}
 .eyebrow{
@@ -109,14 +111,26 @@ header > *{position:relative;z-index:1}
   animation:pulse 2.4s ease-in-out infinite;
 }
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
-.jump{
-  display:inline-flex;align-items:center;gap:8px;margin-top:16px;
-  text-decoration:none;font-size:15px;font-weight:600;
-  padding:11px 20px;border-radius:10px;background:var(--brand);color:#fff;
-  min-height:44px;box-sizing:border-box;
+/* Availability at a glance. This replaces a button that scrolled to a map
+   already on screen: the same space now answers the question the reader came
+   with, before they look at anything. */
+.glance{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 0}
+.stat{
+  display:flex;align-items:center;gap:9px;padding:10px 14px;
+  border-radius:10px;background:var(--card);border:1px solid var(--rule-2);
 }
-.jump:hover{background:var(--brand-2)}
-.jump:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.stat .n{
+  font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:19px;
+  line-height:1;font-variant-numeric:tabular-nums;
+}
+.stat .l{font-size:13px;color:var(--ink-2);line-height:1.25}
+.stat.available{border-color:#bde3d4;background:var(--go-bg)}
+.stat.available .n{color:var(--go)}
+.stat.limited{border-color:#f0d8a8;background:var(--wait-bg)}
+.stat.limited .n{color:var(--wait)}
+.stat.full{border-color:#f0c4c2;background:var(--stop-bg)}
+.stat.full .n{color:var(--stop)}
+.stat.unreported .n{color:var(--ink-3)}
 h1{
   font-family:Archivo,system-ui,sans-serif;
   font-weight:700; font-size:clamp(26px,5.2vw,38px);
@@ -301,7 +315,7 @@ footer a{color:var(--ink-2)}
   <p class="eyebrow"><span class="pulse" aria-hidden="true"></span>Live availability &middot; Greater Accra</p>
   <h1>Find a hospital bed<br>before you travel.</h1>
   <p class="sub">Emergency, ICU and general ward availability, reported by the hospitals themselves. Always call ahead to confirm.</p>
-  <a class="jump" href="#map">See the map</a>
+  <div class="glance" id="glance" aria-live="polite"></div>
   <div class="stamp">
     <span id="stamp-updated">Loading data</span>
     <span id="stamp-count"></span>
@@ -625,11 +639,38 @@ async function loadFromFile(){
       note.textContent += " \u00b7 showing last published data";
     }
 
+    renderGlance();
     renderMarquee();
     render();
     initMap();
   }
 })();
+
+// Counts by status, so the reader learns whether anything is open before they
+// read a single row. Zero-count states are omitted rather than shown as 0.
+function renderGlance(){
+  const box = document.getElementById("glance");
+  if (!box) return;
+
+  const tally = { available:0, limited:0, full:0, unreported:0 };
+  FEATURES.forEach(f => { tally[statusOf(f.properties)]++; });
+
+  const order = [
+    ["available",  "with beds now"],
+    ["limited",    "few left"],
+    ["full",       "full"],
+    ["unreported", "not reported"]
+  ];
+
+  box.innerHTML = order
+    .filter(([key]) => tally[key] > 0)
+    .map(([key, label]) =>
+      '<span class="stat ' + key + '">' +
+        '<span class="n">' + tally[key] + "</span>" +
+        '<span class="l">' + label + "</span>" +
+      "</span>")
+    .join("");
+}
 
 // Two identical runs of the list sit side by side, and the track scrolls by
 // exactly half its width, so the loop closes with no visible jump.
@@ -655,71 +696,64 @@ function renderMarquee(){
 
 /* ---------------------------------------------------------------- account -- */
 
-// A person's name is worth showing back to them: it confirms the session belongs
-// to them and not to whoever used the ward phone last.
-function firstNameOf(user, fallbackName){
-  const full = (user?.user_metadata?.full_name || fallbackName || "").trim();
-  if (full) return full.split(/\s+/)[0];
+// One function owns the whole strip. Earlier this was split across a "signed in"
+// and a "signed out" routine that could both run, which is how the page ended up
+// showing a name and a sign-in button at the same time.
+function paintAccount(user, name){
+  const signedIn = Boolean(user);
+  document.getElementById("who-chip").hidden        = !signedIn;
+  document.getElementById("btn-report").hidden      = !signedIn;
+  document.getElementById("btn-signout").hidden     = !signedIn;
+  document.getElementById("btn-signin-toggle").hidden = signedIn;
+  if (signedIn) document.getElementById("signin-pop").hidden = true;
+
+  if (signedIn){
+    const shown = name || "there";
+    document.getElementById("who-name").textContent = shown;
+    document.getElementById("who-initial").textContent = shown.charAt(0).toUpperCase();
+  }
+}
+
+// Prefer the name given at registration, fall back to the email prefix. Never
+// return empty, because a blank greeting reads as a fault.
+async function nameFor(client, user){
+  const meta = (user?.user_metadata?.full_name || "").trim();
+  if (meta) return meta.split(/\s+/)[0];
+
+  try {
+    const { data } = await client.from("staff_requests").select("full_name").limit(1);
+    const full = (data && data[0] && data[0].full_name || "").trim();
+    if (full) return full.split(/\s+/)[0];
+  } catch { /* the email prefix will do */ }
+
   const email = user?.email || "";
   return email ? email.split("@")[0] : "there";
-}
-
-function showSignedIn(name){
-  document.getElementById("who-name").textContent = name;
-  document.getElementById("who-initial").textContent = name.charAt(0).toUpperCase();
-  document.getElementById("who-chip").hidden = false;
-  document.getElementById("btn-report").hidden = false;
-  document.getElementById("btn-signout").hidden = false;
-  document.getElementById("btn-signin-toggle").hidden = true;
-  document.getElementById("signin-pop").hidden = true;
-}
-
-function showSignedOut(){
-  document.getElementById("who-chip").hidden = true;
-  document.getElementById("btn-report").hidden = true;
-  document.getElementById("btn-signout").hidden = true;
-  document.getElementById("btn-signin-toggle").hidden = false;
-}
-
-async function refreshAccount(){
-  const client = supabaseReady();
-  if (!client) return;
-
-  const { data } = await client.auth.getUser();
-  const user = data?.user;
-  if (!user) { showSignedOut(); return; }
-
-  // Fall back to the name given at registration when the account predates
-  // storing it on the user record.
-  let fallback = "";
-  try {
-    const { data: reqs } = await client
-      .from("staff_requests")
-      .select("full_name")
-      .limit(1);
-    fallback = reqs && reqs[0] ? reqs[0].full_name : "";
-  } catch { /* not fatal; the email prefix will do */ }
-
-  showSignedIn(firstNameOf(user, fallback));
 }
 
 function wireAccount(){
   const client = supabaseReady();
   const toggle = document.getElementById("btn-signin-toggle");
-  const pop = document.getElementById("signin-pop");
-  const err = document.getElementById("si-err");
+  const pop    = document.getElementById("signin-pop");
+  const err    = document.getElementById("si-err");
 
-  if (!client) {
-    // Without a database there is nothing to sign in to, so offer nothing.
+  if (!client){
+    // Nothing to sign in to without a database, so offer nothing.
     document.getElementById("topbar").hidden = true;
     return;
   }
 
+  // The listener is the single source of truth. It fires on load, on sign-in,
+  // on sign-out and on token refresh, so no other code needs to paint the strip.
+  client.auth.onAuthStateChange(async (_event, session) => {
+    const user = session?.user || null;
+    paintAccount(user, user ? await nameFor(client, user) : "");
+  });
+
   toggle.addEventListener("click", () => {
-    const open = pop.hidden;
-    pop.hidden = !open;
-    toggle.setAttribute("aria-expanded", String(open));
-    if (open) document.getElementById("si-email").focus();
+    const opening = pop.hidden;
+    pop.hidden = !opening;
+    toggle.setAttribute("aria-expanded", String(opening));
+    if (opening) document.getElementById("si-email").focus();
   });
 
   async function doSignIn(){
@@ -749,21 +783,15 @@ function wireAccount(){
       err.hidden = false;
       return;
     }
-
     document.getElementById("si-pass").value = "";
-    await refreshAccount();
+    // onAuthStateChange repaints the strip.
   }
 
   document.getElementById("btn-do-signin").addEventListener("click", doSignIn);
   document.getElementById("si-pass").addEventListener("keydown",
     ev => { if (ev.key === "Enter") doSignIn(); });
-
-  document.getElementById("btn-signout").addEventListener("click", async () => {
-    await client.auth.signOut();
-    showSignedOut();
-  });
-
-  refreshAccount();
+  document.getElementById("btn-signout").addEventListener("click",
+    () => client.auth.signOut());
 }
 
 wireAccount();
