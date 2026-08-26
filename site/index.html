@@ -188,6 +188,50 @@ h1{
 }
 @media(max-width:600px){#map{height:260px}}
 
+/* Location bar. Distance is the question people actually arrive with, so it
+   sits above the status filters rather than beside them. */
+.locbar{
+  margin:22px 0 0;padding:14px;border:1px solid var(--rule-2);
+  border-radius:12px;background:var(--card);
+}
+.locbar-row{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch}
+.locbar input{
+  flex:1 1 190px;min-width:0;font:inherit;font-size:16px;padding:11px 13px;
+  border-radius:10px;border:1.5px solid var(--rule-2);background:var(--paper);
+  color:var(--ink);min-height:46px;
+}
+.locbar input:focus{
+  outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-tint);
+}
+.locbar button{
+  appearance:none;cursor:pointer;font:inherit;font-size:14px;font-weight:600;
+  padding:11px 15px;border-radius:10px;min-height:46px;white-space:nowrap;
+  display:inline-flex;align-items:center;gap:7px;
+}
+.btn-here{background:var(--brand);color:#fff;border:1.5px solid var(--brand)}
+.btn-here:hover{background:var(--brand-2);border-color:var(--brand-2)}
+.btn-find{background:var(--card);color:var(--ink-2);border:1.5px solid var(--rule-2)}
+.btn-find:hover{border-color:var(--brand);color:var(--brand)}
+.locbar button:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.locbar button:disabled{opacity:.6;cursor:default}
+.loc-state{
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+  margin:11px 0 0;font-size:13px;color:var(--ink-2);
+}
+.loc-state .pin{color:var(--brand);flex:0 0 auto;display:flex}
+.loc-clear{
+  appearance:none;background:none;border:none;padding:0;font:inherit;font-size:13px;
+  font-weight:600;color:var(--brand);cursor:pointer;text-decoration:underline;
+  min-height:32px;
+}
+.loc-err{color:var(--stop);font-size:13px;margin:10px 0 0;font-weight:500}
+.loc-note{font-size:12px;color:var(--ink-3);margin:9px 0 0;line-height:1.5}
+.dist{
+  font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;
+  color:var(--brand);background:var(--brand-tint);padding:3px 8px;
+  border-radius:5px;white-space:nowrap;
+}
+
 .controls{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 4px}
 .chip{
   appearance:none;cursor:pointer;font:inherit;font-size:14px;font-weight:500;
@@ -359,6 +403,30 @@ footer a{color:var(--ink-2)}
 
 <div id="map" tabindex="-1" role="region" aria-label="Map of Accra hospitals"></div>
 
+<section class="locbar" aria-label="Find hospitals near a place">
+  <div class="locbar-row">
+    <button class="btn-here" id="btn-here" type="button">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/></svg>
+      Use my location
+    </button>
+    <input id="loc-input" type="text" placeholder="Or type an area: Osu, Madina, Tema"
+           autocomplete="off" enterkeyhint="search" aria-label="Area or place name">
+    <button class="btn-find" id="btn-find" type="button">Search</button>
+  </div>
+
+  <div class="loc-state" id="loc-state" hidden>
+    <span class="pin" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+    <span id="loc-label"></span>
+    <button class="loc-clear" id="loc-clear" type="button">Clear</button>
+  </div>
+
+  <p class="loc-err" id="loc-err" hidden></p>
+  <p class="loc-note" id="loc-note" hidden>
+    Distances are straight-line, not driving distance. Traffic can make a nearer
+    hospital take longer, so use Directions for real routing.
+  </p>
+</section>
+
 <div class="controls" role="group" aria-label="Filter hospitals">
   <button class="chip" id="f-all" aria-pressed="true" data-filter="all">All hospitals</button>
   <button class="chip" id="f-go" aria-pressed="false" data-filter="open">Beds available</button>
@@ -395,8 +463,9 @@ footer a{color:var(--ink-2)}
     Ghana National Ambulance Service on 112.
   </p>
   <p class="credit">
-    Built with <a href="https://geolibre.app/">GeoLibre</a>, <a href="https://getgeolens.com/">GeoLens</a>,
-    MapLibre GL JS and OpenFreeMap. Open source, self-hosted, no tracking.
+    Built with MapLibre GL JS, OpenFreeMap and Supabase. Place search by
+    <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors.
+    Open source, no tracking.
   </p>
 </footer>
 
@@ -417,9 +486,27 @@ const STATUS_PIN = {
 };
 
 let FEATURES = [];
+let ORIGIN = null;   // {lat, lon, label} once the reader sets a location
 let filter = "all";
 let map = null;
 const markers = [];
+
+// Haversine. Straight-line only: honest about that in the interface, because
+// in Accra traffic a nearer hospital is not always the faster one.
+function distanceKm(aLat, aLon, bLat, bLon){
+  const R = 6371;
+  const dLat = (bLat - aLat) * Math.PI / 180;
+  const dLon = (bLon - aLon) * Math.PI / 180;
+  const p1 = aLat * Math.PI / 180, p2 = bLat * Math.PI / 180;
+  const h = Math.sin(dLat/2)**2 + Math.cos(p1) * Math.cos(p2) * Math.sin(dLon/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+function formatDistance(km){
+  if (km < 1) return Math.round(km * 1000) + " m";
+  if (km < 10) return km.toFixed(1) + " km";
+  return Math.round(km) + " km";
+}
 
 function esc(s){
   return String(s == null ? "" : s).replace(/[&<>"']/g, c =>
@@ -465,11 +552,23 @@ function cell(label, value){
 
 function render(){
   const list = document.getElementById("list");
-  const rows = FEATURES.filter(f => matches(f.properties));
+  let rows = FEATURES.filter(f => matches(f.properties));
+
+  // With a location set, nearest first. Without one, keep the source order.
+  if (ORIGIN){
+    rows = rows
+      .map(f => {
+        const [lon, lat] = f.geometry.coordinates;
+        return { f, km: distanceKm(ORIGIN.lat, ORIGIN.lon, lat, lon) };
+      })
+      .sort((a, b) => a.km - b.km)
+      .map(x => { x.f._km = x.km; return x.f; });
+  }
 
   document.getElementById("result-count").textContent =
     rows.length + (rows.length === 1 ? " hospital" : " hospitals") +
-    (filter === "all" ? "" : " matching this filter");
+    (filter === "all" ? "" : " matching this filter") +
+    (ORIGIN ? ", nearest first" : "");
 
   if (!rows.length){
     list.innerHTML = '<li class="empty">No hospitals match this filter right now. ' +
@@ -493,7 +592,11 @@ function render(){
       '<div class="body">' +
         '<div class="top">' +
           '<h2 class="name">' + esc(p.hospital_name) + '</h2>' +
-          '<span class="tag ' + st + '">' + esc(STATUS_LABEL[st]) + '</span>' +
+          '<span style="display:inline-flex;align-items:center;gap:7px">' +
+            (ORIGIN && f._km !== undefined
+              ? '<span class="dist">' + formatDistance(f._km) + "</span>" : "") +
+            '<span class="tag ' + st + '">' + esc(STATUS_LABEL[st]) + "</span>" +
+          "</span>" +
         '</div>' +
         '<p class="meta">' + esc(p.hospital_type || "") +
           (p.region_area ? " &middot; " + esc(p.region_area) : "") +
@@ -547,6 +650,128 @@ function drawMarkers(){
     );
   });
 }
+
+/* --------------------------------------------------------------- location -- */
+
+function setOrigin(lat, lon, label){
+  ORIGIN = { lat, lon, label };
+  document.getElementById("loc-label").textContent = "Showing distance from " + label;
+  document.getElementById("loc-state").hidden = false;
+  document.getElementById("loc-note").hidden = false;
+  document.getElementById("loc-err").hidden = true;
+  render();
+  drawMarkers();
+  if (map) map.flyTo({ center: [lon, lat], zoom: 12, duration: 900 });
+}
+
+function clearOrigin(){
+  ORIGIN = null;
+  document.getElementById("loc-state").hidden = true;
+  document.getElementById("loc-note").hidden = true;
+  document.getElementById("loc-err").hidden = true;
+  document.getElementById("loc-input").value = "";
+  render();
+  drawMarkers();
+}
+
+function locError(message){
+  const el = document.getElementById("loc-err");
+  el.textContent = message;
+  el.hidden = false;
+}
+
+function useMyLocation(){
+  const btn = document.getElementById("btn-here");
+  document.getElementById("loc-err").hidden = true;
+
+  if (!navigator.geolocation)
+    return locError("This browser cannot report a location. Type an area instead.");
+
+  btn.disabled = true;
+  const label = btn.innerHTML;
+  btn.textContent = "Locating\u2026";
+
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      btn.disabled = false;
+      btn.innerHTML = label;
+      setOrigin(pos.coords.latitude, pos.coords.longitude, "your location");
+    },
+    err => {
+      btn.disabled = false;
+      btn.innerHTML = label;
+      // Each case needs a different action from the reader, so name which it is.
+      if (err.code === 1)
+        locError("Location permission was refused. Allow it in your browser settings, or type an area below.");
+      else if (err.code === 3)
+        locError("Locating took too long. Try again, or type an area instead.");
+      else
+        locError("Could not read your location. Type an area instead.");
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+  );
+}
+
+// Areas already in the dataset are matched first: it costs no network call and
+// works when the geocoder is unreachable.
+function matchKnownArea(query){
+  const q = query.trim().toLowerCase();
+  if (!q) return null;
+
+  const hit = FEATURES.find(f => {
+    const p = f.properties;
+    return (p.region_area || "").toLowerCase() === q
+        || (p.hospital_name || "").toLowerCase().includes(q);
+  });
+  if (!hit) return null;
+
+  const [lon, lat] = hit.geometry.coordinates;
+  return { lat, lon, label: hit.properties.region_area || hit.properties.hospital_name };
+}
+
+async function findPlace(){
+  const query = document.getElementById("loc-input").value.trim();
+  document.getElementById("loc-err").hidden = true;
+
+  if (!query) return locError("Type an area or place name first.");
+
+  const known = matchKnownArea(query);
+  if (known) return setOrigin(known.lat, known.lon, known.label);
+
+  const btn = document.getElementById("btn-find");
+  btn.disabled = true;
+  btn.textContent = "Searching\u2026";
+
+  try {
+    // OpenStreetMap's geocoder, limited to Ghana and to the Accra area so a
+    // common place name cannot drop the reader on another continent.
+    const url = "https://nominatim.openstreetmap.org/search?format=json&limit=1"
+      + "&countrycodes=gh&viewbox=-0.7,6.1,0.4,5.2&bounded=1"
+      + "&q=" + encodeURIComponent(query);
+
+    const res = await fetch(url, { headers: { "Accept": "application/json" } });
+    if (!res.ok) throw new Error("geocoder");
+
+    const results = await res.json();
+    if (!results.length)
+      return locError("No place found by that name in Greater Accra. Try a nearby area, or use your location.");
+
+    const place = results[0];
+    const label = (place.display_name || query).split(",")[0];
+    setOrigin(parseFloat(place.lat), parseFloat(place.lon), label);
+  } catch {
+    locError("Could not search for that place right now. Use your location, or try again.");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Search";
+  }
+}
+
+document.getElementById("btn-here").addEventListener("click", useMyLocation);
+document.getElementById("btn-find").addEventListener("click", findPlace);
+document.getElementById("loc-clear").addEventListener("click", clearOrigin);
+document.getElementById("loc-input").addEventListener("keydown",
+  ev => { if (ev.key === "Enter") findPlace(); });
 
 function setFilter(next){
   filter = next;
