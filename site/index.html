@@ -13,16 +13,22 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.min.css" rel="stylesheet">
 <style>
 :root{
-  /* Brand indigo. Chosen to sit far from green, amber and red in hue, so it
-     can never be mistaken for a status. Colour on this site means one thing. */
-  --brand:#2b3a7a;
-  --brand-2:#41539c;
-  --brand-tint:#eceef8;
+  /* Crimson brand. The "full" status below is a deeper maroon so the two read
+     differently, and every status also carries a text label, so colour is never
+     the only thing telling a reader what they are looking at. */
+  --brand:#d42a3f;
+  --brand-2:#b21e31;
+  --brand-deep:#7c1120;
+  --brand-tint:#fdeced;
+  --brand-glow:rgba(212,42,63,.28);
 
-  --ink:#171a21;--ink-2:#4a5262;--ink-3:#7d8496;
-  --paper:#faf8f4;--card:#fff;--rule:#e6e2d9;--rule-2:#d3cec2;
-  --go:#1d7a5f;--go-bg:#e3f2ec;--wait:#b06a06;--wait-bg:#fbeeda;
-  --stop:#b3322f;--stop-bg:#fbe8e7;--none:#6e7780;--none-bg:#eeece6;
+  --ink:#1b1215;--ink-2:#5a4a4f;--ink-3:#8d7c81;
+  --paper:#fffaf8;--card:#fff;--rule:#f0e3e1;--rule-2:#e0cdcb;
+
+  --go:#0e7a54;--go-bg:#e2f4ec;--go-line:#b6e0cf;
+  --wait:#b8730a;--wait-bg:#fdf0dc;--wait-line:#f2d9a8;
+  --stop:#8e1c2c;--stop-bg:#fae9eb;--stop-line:#eec4ca;
+  --none:#8d7c81;--none-bg:#f6efee;
 }
 @media (prefers-color-scheme: dark){
   :root{
@@ -67,24 +73,51 @@ body{
 .link-btn:hover{border-color:var(--brand);color:var(--brand)}
 .link-btn:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
 .link-btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.link-btn.primary:hover{background:var(--brand-2);border-color:var(--brand-2);color:#fff}
+
+.acct{position:relative}
+.acct-btn{
+  display:inline-flex;align-items:center;gap:9px;cursor:pointer;font:inherit;
+  font-size:14px;font-weight:600;color:#fff;background:var(--brand);
+  border:1px solid var(--brand);padding:8px 13px;border-radius:10px;min-height:42px;
+}
+.acct-btn:hover{background:var(--brand-2);border-color:var(--brand-2)}
+.acct-btn:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.acct-btn .avatar{
+  width:24px;height:24px;border-radius:50%;flex:0 0 24px;background:rgba(255,255,255,.22);
+  display:flex;align-items:center;justify-content:center;
+  font-family:Archivo,sans-serif;font-weight:700;font-size:11px;
+}
+.acct-menu{
+  position:absolute;right:0;top:calc(100% + 8px);z-index:40;
+  min-width:262px;background:var(--card);border:1px solid var(--rule-2);
+  border-radius:14px;overflow:hidden;
+  box-shadow:0 20px 44px -20px rgba(0,0,0,.28), 0 2px 8px -4px rgba(0,0,0,.10);
+}
+.acct-head{padding:15px 16px 13px;border-bottom:1px solid var(--rule)}
+.acct-name{
+  font-family:Archivo,sans-serif;font-weight:700;font-size:16px;
+  color:var(--ink);margin:0 0 2px;
+}
+.acct-mail{
+  font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-3);
+  margin:0;word-break:break-all;
+}
+.acct-menu a,.acct-menu button{
+  display:block;width:100%;text-align:left;box-sizing:border-box;
+  padding:13px 16px;font:inherit;font-size:15px;color:var(--ink);
+  text-decoration:none;background:none;border:none;cursor:pointer;min-height:46px;
+}
+.acct-menu a:hover,.acct-menu button:hover{background:var(--brand-tint);color:var(--brand)}
+.acct-menu a:focus-visible,.acct-menu button:focus-visible{
+  outline:2px solid var(--brand);outline-offset:-2px;
+}
+.acct-menu .danger{
+  color:var(--brand);font-weight:600;border-top:1px solid var(--rule);
+}
 .link-btn.primary:hover{background:var(--brand-2);color:#fff}
 a.link-btn{display:inline-flex;align-items:center;text-decoration:none}
 
-/* Inline sign-in, so a returning reporter never leaves the map to get back in. */
-.signin-pop{
-  margin:10px 0 0;padding:16px;border:1px solid var(--rule-2);border-radius:10px;
-  background:var(--card);max-width:340px;margin-left:auto;
-}
-.signin-pop label{display:block;font-size:13px;font-weight:500;color:var(--ink-2);margin:0 0 5px}
-.signin-pop input{
-  width:100%;font:inherit;font-size:16px;padding:10px 12px;border-radius:8px;
-  border:1px solid var(--rule-2);background:var(--paper);color:var(--ink);min-height:44px;
-}
-.signin-pop input:focus{outline:2px solid var(--brand);outline-offset:1px;border-color:var(--brand)}
-.signin-pop .row{margin:0 0 12px}
-.signin-pop .err{color:var(--stop);font-size:13px;margin:8px 0 0;font-weight:500}
-.signin-pop .foot{font-size:13px;color:var(--ink-3);margin:12px 0 0}
-.signin-pop .foot a{color:var(--brand)}
 
 header{
   position:relative;padding:34px 0 22px;border-bottom:1px solid var(--rule);
@@ -285,30 +318,26 @@ footer a{color:var(--ink-2)}
 <div class="wrap">
 
 <div class="topbar" id="topbar">
-  <span class="who-chip" id="who-chip" hidden>
-    <span class="avatar" id="who-initial" aria-hidden="true"></span>
-    <span>Signed in as <b id="who-name"></b></span>
-  </span>
-  <a class="link-btn primary" id="btn-report" href="./staff.html" hidden>Report bed counts</a>
-  <button class="link-btn" id="btn-signout" hidden>Sign out</button>
-  <button class="link-btn" id="btn-signin-toggle" aria-expanded="false" aria-controls="signin-pop" hidden>Staff sign in</button>
-</div>
+  <a class="link-btn primary" id="btn-signin-link" href="./login.html" hidden>Staff sign in</a>
 
-<div class="signin-pop" id="signin-pop" hidden>
-  <div class="row">
-    <label for="si-email">Email</label>
-    <input id="si-email" type="email" autocomplete="username" autocapitalize="none" inputmode="email">
+  <div class="acct" id="acct" hidden>
+    <button class="acct-btn" id="acct-btn" aria-expanded="false" aria-haspopup="true" aria-controls="acct-menu">
+      <span class="avatar" id="who-initial" aria-hidden="true"></span>
+      <span id="who-name">Account</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+
+    <div class="acct-menu" id="acct-menu" role="menu" hidden>
+      <div class="acct-head">
+        <p class="acct-name" id="menu-name"></p>
+        <p class="acct-mail" id="menu-mail"></p>
+      </div>
+      <a role="menuitem" href="./staff.html">Report bed counts</a>
+      <a role="menuitem" href="./suggest.html">Suggest a hospital</a>
+      <a role="menuitem" href="./register.html">Request access to another hospital</a>
+      <button role="menuitem" class="danger" id="btn-signout">Sign out</button>
+    </div>
   </div>
-  <div class="row">
-    <label for="si-pass">Password</label>
-    <input id="si-pass" type="password" autocomplete="current-password">
-  </div>
-  <button class="link-btn primary" id="btn-do-signin" style="width:100%">Sign in</button>
-  <p class="err" id="si-err" hidden></p>
-  <p class="foot">
-    No account? <a href="./register.html">Request staff access</a>.
-    Approval is needed before you can report.
-  </p>
 </div>
 
 <header>
@@ -696,22 +725,23 @@ function renderMarquee(){
 
 /* ---------------------------------------------------------------- account -- */
 
-// One function owns the whole strip. Earlier this was split across a "signed in"
-// and a "signed out" routine that could both run, which is how the page ended up
-// showing a name and a sign-in button at the same time.
+// One function owns the strip, so a name and a sign-in button can never appear
+// together the way they did when two routines shared the job.
 function paintAccount(user, name){
   const signedIn = Boolean(user);
-  document.getElementById("who-chip").hidden        = !signedIn;
-  document.getElementById("btn-report").hidden      = !signedIn;
-  document.getElementById("btn-signout").hidden     = !signedIn;
-  document.getElementById("btn-signin-toggle").hidden = signedIn;
-  if (signedIn) document.getElementById("signin-pop").hidden = true;
-
-  if (signedIn){
-    const shown = name || "there";
-    document.getElementById("who-name").textContent = shown;
-    document.getElementById("who-initial").textContent = shown.charAt(0).toUpperCase();
+  document.getElementById("acct").hidden = !signedIn;
+  document.getElementById("btn-signin-link").hidden = signedIn;
+  if (!signedIn){
+    document.getElementById("acct-menu").hidden = true;
+    document.getElementById("acct-btn").setAttribute("aria-expanded", "false");
+    return;
   }
+
+  const shown = name || "Account";
+  document.getElementById("who-name").textContent = shown;
+  document.getElementById("who-initial").textContent = shown.charAt(0).toUpperCase();
+  document.getElementById("menu-name").textContent = shown;
+  document.getElementById("menu-mail").textContent = user.email || "";
 }
 
 // Prefer the name given at registration, fall back to the email prefix. Never
@@ -727,71 +757,52 @@ async function nameFor(client, user){
   } catch { /* the email prefix will do */ }
 
   const email = user?.email || "";
-  return email ? email.split("@")[0] : "there";
+  return email ? email.split("@")[0] : "Account";
 }
 
 function wireAccount(){
   const client = supabaseReady();
-  const toggle = document.getElementById("btn-signin-toggle");
-  const pop    = document.getElementById("signin-pop");
-  const err    = document.getElementById("si-err");
 
   if (!client){
-    // Nothing to sign in to without a database, so offer nothing.
     document.getElementById("topbar").hidden = true;
     return;
   }
 
-  // The listener is the single source of truth. It fires on load, on sign-in,
-  // on sign-out and on token refresh, so no other code needs to paint the strip.
+  const btn  = document.getElementById("acct-btn");
+  const menu = document.getElementById("acct-menu");
+
+  function closeMenu(){
+    menu.hidden = true;
+    btn.setAttribute("aria-expanded", "false");
+  }
+
+  btn.addEventListener("click", ev => {
+    ev.stopPropagation();
+    const opening = menu.hidden;
+    menu.hidden = !opening;
+    btn.setAttribute("aria-expanded", String(opening));
+  });
+
+  // Clicking elsewhere or pressing Escape closes it, which is what a menu is
+  // expected to do and avoids it hanging open over the map.
+  document.addEventListener("click", ev => {
+    if (!menu.hidden && !menu.contains(ev.target)) closeMenu();
+  });
+  document.addEventListener("keydown", ev => {
+    if (ev.key === "Escape" && !menu.hidden){ closeMenu(); btn.focus(); }
+  });
+
+  document.getElementById("btn-signout").addEventListener("click", async () => {
+    closeMenu();
+    await client.auth.signOut();
+  });
+
+  // The listener is the single source of truth: it fires on load, sign-in,
+  // sign-out and token refresh.
   client.auth.onAuthStateChange(async (_event, session) => {
     const user = session?.user || null;
     paintAccount(user, user ? await nameFor(client, user) : "");
   });
-
-  toggle.addEventListener("click", () => {
-    const opening = pop.hidden;
-    pop.hidden = !opening;
-    toggle.setAttribute("aria-expanded", String(opening));
-    if (opening) document.getElementById("si-email").focus();
-  });
-
-  async function doSignIn(){
-    err.hidden = true;
-    const email = document.getElementById("si-email").value.trim();
-    const password = document.getElementById("si-pass").value;
-
-    if (!email || !password){
-      err.textContent = "Enter your email and password.";
-      err.hidden = false;
-      return;
-    }
-
-    const btn = document.getElementById("btn-do-signin");
-    btn.disabled = true;
-    btn.textContent = "Signing in\u2026";
-
-    const { error } = await client.auth.signInWithPassword({ email, password });
-
-    btn.disabled = false;
-    btn.textContent = "Sign in";
-
-    if (error){
-      err.textContent = /invalid/i.test(error.message)
-        ? "That email and password did not work."
-        : error.message;
-      err.hidden = false;
-      return;
-    }
-    document.getElementById("si-pass").value = "";
-    // onAuthStateChange repaints the strip.
-  }
-
-  document.getElementById("btn-do-signin").addEventListener("click", doSignIn);
-  document.getElementById("si-pass").addEventListener("keydown",
-    ev => { if (ev.key === "Enter") doSignIn(); });
-  document.getElementById("btn-signout").addEventListener("click",
-    () => client.auth.signOut());
 }
 
 wireAccount();

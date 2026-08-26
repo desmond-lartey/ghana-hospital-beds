@@ -11,16 +11,22 @@
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  /* Brand indigo. Chosen to sit far from green, amber and red in hue, so it
-     can never be mistaken for a status. Colour on this site means one thing. */
-  --brand:#2b3a7a;
-  --brand-2:#41539c;
-  --brand-tint:#eceef8;
+  /* Crimson brand. The "full" status below is a deeper maroon so the two read
+     differently, and every status also carries a text label, so colour is never
+     the only thing telling a reader what they are looking at. */
+  --brand:#d42a3f;
+  --brand-2:#b21e31;
+  --brand-deep:#7c1120;
+  --brand-tint:#fdeced;
+  --brand-glow:rgba(212,42,63,.28);
 
-  --ink:#171a21;--ink-2:#4a5262;--ink-3:#7d8496;
-  --paper:#faf8f4;--card:#fff;--rule:#e6e2d9;--rule-2:#d3cec2;
-  --go:#1d7a5f;--go-bg:#e3f2ec;--wait:#b06a06;--wait-bg:#fbeeda;
-  --stop:#b3322f;--stop-bg:#fbe8e7;--none:#6e7780;--none-bg:#eeece6;
+  --ink:#1b1215;--ink-2:#5a4a4f;--ink-3:#8d7c81;
+  --paper:#fffaf8;--card:#fff;--rule:#f0e3e1;--rule-2:#e0cdcb;
+
+  --go:#0e7a54;--go-bg:#e2f4ec;--go-line:#b6e0cf;
+  --wait:#b8730a;--wait-bg:#fdf0dc;--wait-line:#f2d9a8;
+  --stop:#8e1c2c;--stop-bg:#fae9eb;--stop-line:#eec4ca;
+  --none:#8d7c81;--none-bg:#f6efee;
 }
 @media (prefers-color-scheme: dark){
   :root{
@@ -113,19 +119,20 @@ footer a{color:var(--ink-2)}
 </header>
 
 <section id="signin">
-  <h2>Sign in</h2>
-  <div class="field">
-    <label for="email">Email</label>
-    <input id="email" type="email" autocomplete="username" autocapitalize="none" inputmode="email">
-  </div>
-  <div class="field">
-    <label for="pass">Password</label>
-    <input id="pass" type="password" autocomplete="current-password">
-  </div>
-  <button id="btn-signin">Sign in</button>
+  <h2>Sign in required</h2>
+  <p class="sub" style="margin-bottom:16px">
+    Reporting bed counts needs an approved staff account.
+  </p>
   <p class="err" id="err-signin" hidden></p>
+  <div style="margin-top:6px">
+    <a href="./login.html?next=staff.html"
+       style="display:flex;align-items:center;justify-content:center;
+              text-decoration:none;font-size:15px;font-weight:600;
+              padding:14px 20px;border-radius:10px;background:var(--brand);
+              color:#fff;min-height:50px">Sign in</a>
+  </div>
   <p class="hint">
-    No account yet? <a href="./register.html">Request staff access</a>. An administrator
+    No account? <a href="./register.html">Request staff access</a>. An administrator
     confirms your role before you can report.
   </p>
 </section>
@@ -290,46 +297,6 @@ function hide(id){ $(id).hidden = true; }
 
 function configured(){
   return window.SUPABASE_URL && !window.SUPABASE_URL.includes("YOUR-PROJECT-REF");
-}
-
-async function signIn(){
-  hide("err-signin");
-
-  if (!configured()){
-    $("err-signin").textContent =
-      "This site is not connected to a database yet. Set SUPABASE_URL and " +
-      "SUPABASE_ANON_KEY in config.js.";
-    $("err-signin").hidden = false;
-    return;
-  }
-
-  const email = $("email").value.trim();
-  const password = $("pass").value;
-  if (!email || !password){
-    $("err-signin").textContent = "Enter your email and password.";
-    $("err-signin").hidden = false;
-    return;
-  }
-
-  $("btn-signin").disabled = true;
-  $("btn-signin").textContent = "Signing in\u2026";
-
-  try {
-    const { error } = await client.auth.signInWithPassword({ email, password });
-    if (error) throw new Error(
-      error.message.toLowerCase().includes("invalid")
-        ? "That email and password did not work. Check them and try again."
-        : error.message
-    );
-    $("pass").value = "";
-    await loadHospitals();
-  } catch (err) {
-    $("err-signin").textContent = err.message;
-    $("err-signin").hidden = false;
-  } finally {
-    $("btn-signin").disabled = false;
-    $("btn-signin").textContent = "Sign in";
-  }
 }
 
 async function loadHospitals(){
@@ -542,14 +509,11 @@ async function signOut(){
   hospitals = [];
   $("report").hidden = true;
   $("signin").hidden = false;
-  $("pass").value = "";
   hide("out");
 }
 
 ["emergency","icu","general"].forEach(id =>
   $(id).addEventListener("input", () => { updatePreview(); hide("err-report"); }));
-$("btn-signin").addEventListener("click", signIn);
-$("pass").addEventListener("keydown", ev => { if (ev.key === "Enter") signIn(); });
 $("btn-submit").addEventListener("click", submitReport);
 $("btn-signout").addEventListener("click", signOut);
 $("btn-details").addEventListener("click", saveDetails);
