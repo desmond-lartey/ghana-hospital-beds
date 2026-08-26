@@ -73,6 +73,29 @@ button.ghost{background:transparent;color:var(--ink-2);border:1px solid var(--ru
 .preview .txt{font-family:"IBM Plex Mono",monospace;font-size:12px;
   text-transform:uppercase;letter-spacing:.07em;font-weight:600}
 .hint{font-size:13px;color:var(--ink-3);margin:8px 0 0}
+details.panel{
+  margin:26px 0 0;border:1px solid var(--rule);border-radius:10px;
+  background:var(--card);overflow:hidden;
+}
+details.panel > summary{
+  cursor:pointer;list-style:none;padding:14px 16px;
+  font-family:Archivo,sans-serif;font-weight:600;font-size:15px;color:var(--ink);
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  min-height:44px;box-sizing:border-box;
+}
+details.panel > summary::-webkit-details-marker{display:none}
+details.panel > summary::after{
+  content:"+";font-family:"IBM Plex Mono",monospace;font-size:18px;
+  color:var(--ink-3);font-weight:400;
+}
+details.panel[open] > summary::after{content:"\2013"}
+details.panel > summary:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.panel-body{padding:2px 16px 18px;border-top:1px solid var(--rule)}
+.panel-note{font-size:13px;color:var(--ink-3);margin:12px 0 14px;line-height:1.5}
+.locked{
+  margin:14px 0 0;padding:11px 13px;border-radius:8px;background:var(--none-bg);
+  font-size:13px;color:var(--ink-2);line-height:1.55;
+}
 .who{font-size:13px;color:var(--ink-3);margin:0 0 14px}
 footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--rule);
   font-size:13px;color:var(--ink-3)}
@@ -151,6 +174,60 @@ footer a{color:var(--ink-2)}
   <div style="margin-top:10px"><button class="ghost" id="btn-signout">Sign out</button></div>
 
   <div class="msg info" id="out" hidden></div>
+
+  <details class="panel" id="details-panel">
+    <summary>Hospital contact details</summary>
+    <div class="panel-body">
+      <p class="panel-note">
+        Correct these when they change. They are not part of the daily report, so
+        there is no need to open this every time.
+      </p>
+
+      <div class="field">
+        <label for="d-phone">Main phone number</label>
+        <input id="d-phone" type="tel" autocomplete="tel" placeholder="+233 ...">
+        <p class="hint">The number families and dispatchers call. Include the country code.</p>
+      </div>
+
+      <div class="field">
+        <label for="d-address">Street address</label>
+        <input id="d-address" type="text" autocomplete="street-address">
+      </div>
+
+      <div class="field">
+        <label for="d-area">Area or suburb</label>
+        <input id="d-area" type="text" placeholder="Legon, Osu, Tema">
+      </div>
+
+      <div class="field">
+        <label for="d-type">Facility type</label>
+        <select id="d-type">
+          <option value="">Not stated</option>
+          <option>Teaching</option>
+          <option>Government</option>
+          <option>Private</option>
+          <option>Clinic</option>
+          <option>Polyclinic</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="d-notes">Notes shown on the map</label>
+        <input id="d-notes" type="text" placeholder="ICU short-staffed at weekends">
+      </div>
+
+      <p class="err" id="err-details" hidden></p>
+      <button id="btn-details">Save details</button>
+      <div class="msg" id="out-details" hidden></div>
+
+      <p class="locked">
+        The hospital name and its position on the map are set by the administrator.
+        A wrong phone number costs a call; a wrong position sends an ambulance to the
+        wrong place, so those changes are checked before they take effect.
+        <a href="./suggest.html">Report a problem with the location</a>.
+      </p>
+    </div>
+  </details>
 </section>
 
 <footer>
@@ -300,7 +377,8 @@ async function loadHospitals(){
   const ids = links.map(l => l.hospital_id);
   const { data, error } = await client
     .from("hospitals")
-    .select("id,name,emergency_beds,icu_beds,general_beds,oxygen_available,ambulance_available")
+    .select("id,name,emergency_beds,icu_beds,general_beds,oxygen_available," +
+            "ambulance_available,main_phone,address,region_area,type,notes")
     .in("id", ids)
     .order("name");
 
@@ -330,7 +408,73 @@ function prefill(){
   $("general").value = h.general_beds ?? "";
   $("oxygen").checked = h.oxygen_available === true;
   $("ambulance").checked = h.ambulance_available === true;
+
+  $("d-phone").value   = h.main_phone  ?? "";
+  $("d-address").value = h.address     ?? "";
+  $("d-area").value    = h.region_area ?? "";
+  $("d-type").value    = h.type        ?? "";
+  $("d-notes").value   = h.notes       ?? "";
+  hide("out-details");
+  hide("err-details");
+
   updatePreview();
+}
+
+async function saveDetails(){
+  hide("err-details");
+  hide("out-details");
+
+  const h = hospitals[Number($("hospital").value)];
+  if (!h) return;
+
+  const phone = $("d-phone").value.trim();
+  // Loose on formatting, strict on plausibility: enough digits to be a real
+  // number, and nothing that is obviously not one.
+  if (phone && phone.replace(/[^\d]/g, "").length < 9){
+    $("err-details").textContent =
+      "That phone number looks too short. Include the area or country code.";
+    $("err-details").hidden = false;
+    return;
+  }
+
+  $("btn-details").disabled = true;
+  $("btn-details").textContent = "Saving\u2026";
+
+  try {
+    const { error } = await client
+      .from("hospitals")
+      .update({
+        main_phone:  phone || null,
+        address:     $("d-address").value.trim() || null,
+        region_area: $("d-area").value.trim() || null,
+        type:        $("d-type").value || null,
+        notes:       $("d-notes").value.trim() || null
+      })
+      .eq("id", h.id);
+
+    if (error) throw new Error(
+      error.code === "42501" || /permission|policy/i.test(error.message)
+        ? "You are not permitted to change those fields. The hospital name and its " +
+          "position are set by the administrator."
+        : error.message
+    );
+
+    Object.assign(h, {
+      main_phone:  phone || null,
+      address:     $("d-address").value.trim() || null,
+      region_area: $("d-area").value.trim() || null,
+      type:        $("d-type").value || null,
+      notes:       $("d-notes").value.trim() || null
+    });
+
+    show("out-details", "Details saved for " + h.name +
+      ". The public map will show them on its next load.", "ok");
+  } catch (err) {
+    show("out-details", err.message, "bad");
+  } finally {
+    $("btn-details").disabled = false;
+    $("btn-details").textContent = "Save details";
+  }
 }
 
 async function submitReport(){
@@ -408,6 +552,7 @@ $("btn-signin").addEventListener("click", signIn);
 $("pass").addEventListener("keydown", ev => { if (ev.key === "Enter") signIn(); });
 $("btn-submit").addEventListener("click", submitReport);
 $("btn-signout").addEventListener("click", signOut);
+$("btn-details").addEventListener("click", saveDetails);
 
 if (configured()){
   client = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
