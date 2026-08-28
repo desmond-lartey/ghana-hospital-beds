@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Accra hospital beds</title>
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./favicon.svg">
+<meta name="description" content="Live bed, ICU and oxygen availability across Accra hospitals. Check before you travel, and call ahead.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.min.css" rel="stylesheet">
+<style>
+:root{
+  /* Crimson brand. The "full" status below is a deeper maroon so the two read
+     differently, and every status also carries a text label, so colour is never
+     the only thing telling a reader what they are looking at. */
+  --brand:#d42a3f;
+  --brand-2:#b21e31;
+  --brand-deep:#7c1120;
+  --brand-tint:#fdeced;
+  --brand-glow:rgba(212,42,63,.28);
+
+  --ink:#1b1215;--ink-2:#5a4a4f;--ink-3:#8d7c81;
+  --paper:#fffaf8;--card:#fff;--rule:#f0e3e1;--rule-2:#e0cdcb;
+
+  --go:#0e7a54;--go-bg:#e2f4ec;--go-line:#b6e0cf;
+  --wait:#b8730a;--wait-bg:#fdf0dc;--wait-line:#f2d9a8;
+  --stop:#8e1c2c;--stop-bg:#fae9eb;--stop-line:#eec4ca;
+  --none:#8d7c81;--none-bg:#f6efee;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --brand:#8f9fe0;--brand-2:#a9b6ea;--brand-tint:#1b2140;
+    --ink:#eceef3;--ink-2:#a6adbe;--ink-3:#7b8296;
+    --paper:#0f1116;--card:#171a21;--rule:#282d38;--rule-2:#39404e;
+    --go:#5cc79f;--go-bg:#12312a;--wait:#e0a038;--wait-bg:#39290f;
+    --stop:#f0736f;--stop-bg:#3a1a19;--none:#8b949d;--none-bg:#20242d;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-size:16px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:920px;margin:0 auto;padding:0 16px 64px}
+
+/* Account strip. Sits above everything so the answer to "am I signed in?" is
+   never something the reader has to hunt for. */
+.topbar{
+  display:flex;align-items:center;justify-content:flex-end;gap:10px;
+  flex-wrap:wrap;padding:12px 0 0;min-height:44px;
+}
+.who-chip{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:14px;color:var(--ink-2);
+}
+.who-chip .avatar{
+  width:26px;height:26px;border-radius:50%;flex:0 0 26px;
+  background:var(--brand);color:#fff;display:flex;align-items:center;
+  justify-content:center;font-family:Archivo,sans-serif;font-weight:600;font-size:12px;
+}
+.who-chip b{color:var(--ink);font-weight:600}
+.link-btn{
+  appearance:none;border:1px solid var(--rule-2);background:var(--card);
+  font:inherit;font-size:14px;font-weight:500;color:var(--ink-2);cursor:pointer;
+  padding:8px 14px;border-radius:8px;min-height:40px;
+}
+.link-btn:hover{border-color:var(--brand);color:var(--brand)}
+.link-btn:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.link-btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.link-btn.primary:hover{background:var(--brand-2);border-color:var(--brand-2);color:#fff}
+
+.acct{position:relative}
+.acct-btn{
+  display:inline-flex;align-items:center;gap:9px;cursor:pointer;font:inherit;
+  font-size:14px;font-weight:600;color:#fff;background:var(--brand);
+  border:1px solid var(--brand);padding:8px 13px;border-radius:10px;min-height:42px;
+}
+.acct-btn:hover{background:var(--brand-2);border-color:var(--brand-2)}
+.acct-btn:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.acct-btn .avatar{
+  width:24px;height:24px;border-radius:50%;flex:0 0 24px;background:rgba(255,255,255,.22);
+  display:flex;align-items:center;justify-content:center;
+  font-family:Archivo,sans-serif;font-weight:700;font-size:11px;
+}
+.acct-menu{
+  position:absolute;right:0;top:calc(100% + 8px);z-index:40;
+  min-width:262px;background:var(--card);border:1px solid var(--rule-2);
+  border-radius:14px;overflow:hidden;
+  box-shadow:0 20px 44px -20px rgba(0,0,0,.28), 0 2px 8px -4px rgba(0,0,0,.10);
+}
+.acct-head{padding:15px 16px 13px;border-bottom:1px solid var(--rule)}
+.acct-name{
+  font-family:Archivo,sans-serif;font-weight:700;font-size:16px;
+  color:var(--ink);margin:0 0 2px;
+}
+.acct-mail{
+  font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-3);
+  margin:0;word-break:break-all;
+}
+.acct-menu a,.acct-menu button{
+  display:block;width:100%;text-align:left;box-sizing:border-box;
+  padding:13px 16px;font:inherit;font-size:15px;color:var(--ink);
+  text-decoration:none;background:none;border:none;cursor:pointer;min-height:46px;
+}
+.acct-menu a:hover,.acct-menu button:hover{background:var(--brand-tint);color:var(--brand)}
+.acct-menu a:focus-visible,.acct-menu button:focus-visible{
+  outline:2px solid var(--brand);outline-offset:-2px;
+}
+.acct-menu .danger{
+  color:var(--brand);font-weight:600;border-top:1px solid var(--rule);
+}
+.link-btn.primary:hover{background:var(--brand-2);color:#fff}
+a.link-btn{display:inline-flex;align-items:center;text-decoration:none}
+
+
+header{
+  position:relative;padding:34px 0 22px;border-bottom:1px solid var(--rule);
+  overflow:hidden;
+}
+/* A quiet indigo wash behind the title. Decoration is kept to the header so it
+   cannot compete with the status colours further down the page. */
+header::before{
+  content:"";position:absolute;inset:-70% -35% auto -35%;height:240%;
+  background:
+    radial-gradient(46% 42% at 12% 4%,  var(--brand-tint) 0%, transparent 72%),
+    radial-gradient(38% 34% at 88% 0%,  var(--go-bg)      0%, transparent 70%);
+  z-index:0;pointer-events:none;opacity:.9;
+}
+header > *{position:relative;z-index:1}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:7px;margin:0 0 10px;
+  font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.09em;color:var(--brand);
+  background:var(--brand-tint);padding:5px 10px;border-radius:999px;
+}
+.eyebrow .pulse{
+  width:7px;height:7px;border-radius:50%;background:var(--go);flex:0 0 7px;
+  animation:pulse 2.4s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+/* Availability at a glance. This replaces a button that scrolled to a map
+   already on screen: the same space now answers the question the reader came
+   with, before they look at anything. */
+.glance{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 0}
+.stat{
+  display:flex;align-items:center;gap:9px;padding:10px 14px;
+  border-radius:10px;background:var(--card);border:1px solid var(--rule-2);
+}
+.stat .n{
+  font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:19px;
+  line-height:1;font-variant-numeric:tabular-nums;
+}
+.stat .l{font-size:13px;color:var(--ink-2);line-height:1.25}
+.stat.available{border-color:#bde3d4;background:var(--go-bg)}
+.stat.available .n{color:var(--go)}
+.stat.limited{border-color:#f0d8a8;background:var(--wait-bg)}
+.stat.limited .n{color:var(--wait)}
+.stat.full{border-color:#f0c4c2;background:var(--stop-bg)}
+.stat.full .n{color:var(--stop)}
+.stat.unreported .n{color:var(--ink-3)}
+h1{
+  font-family:Archivo,system-ui,sans-serif;
+  font-weight:700; font-size:clamp(26px,5.2vw,38px);
+  letter-spacing:-.02em; line-height:1.05; margin:0 0 6px;
+}
+.sub{color:var(--ink-2);font-size:15px;margin:0;max-width:52ch}
+.stamp{
+  display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;
+  margin-top:14px;font-family:"IBM Plex Mono",monospace;
+  font-size:12px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;
+}
+
+.notice{
+  margin:18px 0 0;padding:12px 14px;border:1px solid var(--rule-2);
+  border-radius:8px;background:var(--card);font-size:14px;color:var(--ink-2);
+}
+.notice b{color:var(--ink);font-weight:600}
+
+#map{
+  height:340px;margin:20px 0 0;border-radius:10px;
+  border:1px solid var(--rule);background:var(--card);overflow:hidden;
+}
+@media(max-width:600px){#map{height:260px}}
+
+/* Location bar. Distance is the question people actually arrive with, so it
+   sits above the status filters rather than beside them. */
+.locbar{
+  margin:22px 0 0;padding:14px;border:1px solid var(--rule-2);
+  border-radius:12px;background:var(--card);
+}
+.locbar-row{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch}
+.locbar input{
+  flex:1 1 190px;min-width:0;font:inherit;font-size:16px;padding:11px 13px;
+  border-radius:10px;border:1.5px solid var(--rule-2);background:var(--paper);
+  color:var(--ink);min-height:46px;
+}
+.locbar input:focus{
+  outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-tint);
+}
+.locbar button{
+  appearance:none;cursor:pointer;font:inherit;font-size:14px;font-weight:600;
+  padding:11px 15px;border-radius:10px;min-height:46px;white-space:nowrap;
+  display:inline-flex;align-items:center;gap:7px;
+}
+.btn-here{background:var(--brand);color:#fff;border:1.5px solid var(--brand)}
+.btn-here:hover{background:var(--brand-2);border-color:var(--brand-2)}
+.btn-find{background:var(--card);color:var(--ink-2);border:1.5px solid var(--rule-2)}
+.btn-find:hover{border-color:var(--brand);color:var(--brand)}
+.locbar button:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.locbar button:disabled{opacity:.6;cursor:default}
+.loc-state{
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+  margin:11px 0 0;font-size:13px;color:var(--ink-2);
+}
+.loc-state .pin{color:var(--brand);flex:0 0 auto;display:flex}
+.loc-clear{
+  appearance:none;background:none;border:none;padding:0;font:inherit;font-size:13px;
+  font-weight:600;color:var(--brand);cursor:pointer;text-decoration:underline;
+  min-height:32px;
+}
+.loc-err{color:var(--stop);font-size:13px;margin:10px 0 0;font-weight:500}
+.loc-note{font-size:12px;color:var(--ink-3);margin:9px 0 0;line-height:1.5}
+.dist{
+  font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;
+  color:var(--brand);background:var(--brand-tint);padding:3px 8px;
+  border-radius:5px;white-space:nowrap;
+}
+
+.controls{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 4px}
+.chip{
+  appearance:none;cursor:pointer;font:inherit;font-size:14px;font-weight:500;
+  padding:8px 14px;border-radius:999px;border:1px solid var(--rule-2);
+  background:var(--card);color:var(--ink-2);transition:border-color .12s,color .12s;
+}
+.chip:hover{border-color:var(--ink-3)}
+.chip[aria-pressed="true"]{border-color:var(--brand);background:var(--brand-tint);color:var(--brand);font-weight:600}
+.chip:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+.count{
+  font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-3);
+  text-transform:uppercase;letter-spacing:.06em;margin:14px 0 10px;
+}
+
+ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+li.row{
+  background:var(--card);border:1px solid var(--rule);border-radius:10px;
+  overflow:hidden;display:flex;
+}
+.band{width:6px;flex:0 0 6px}
+.band.available{background:var(--go)}
+.band.limited{background:var(--wait)}
+.band.full{background:var(--stop)}
+.band.unreported{background:var(--none)}
+
+.body{flex:1;min-width:0;padding:14px 16px}
+.top{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:baseline;justify-content:space-between}
+.name{
+  font-family:Archivo,system-ui,sans-serif;font-weight:600;
+  font-size:17px;letter-spacing:-.01em;margin:0;
+}
+.tag{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.07em;padding:3px 8px;border-radius:4px;white-space:nowrap;
+}
+.tag.available{color:var(--go);background:var(--go-bg)}
+.tag.limited{color:var(--wait);background:var(--wait-bg)}
+.tag.full{color:var(--stop);background:var(--stop-bg)}
+.tag.unreported{color:var(--none);background:var(--none-bg)}
+
+.meta{color:var(--ink-3);font-size:13px;margin:2px 0 0}
+.approx{color:var(--wait);font-size:12px;margin:5px 0 0;font-weight:500}
+
+.readout{display:flex;flex-wrap:wrap;gap:18px;margin:12px 0 0}
+.cell .k{
+  font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--ink-3);
+  text-transform:uppercase;letter-spacing:.08em;display:block;
+}
+.cell .v{
+  font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:21px;
+  line-height:1.2;font-variant-numeric:tabular-nums;
+}
+.v.dim{color:var(--ink-3);font-weight:500}
+
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0}
+.call{
+  display:inline-flex;align-items:center;gap:7px;text-decoration:none;
+  font-size:14px;font-weight:600;padding:9px 16px;border-radius:8px;
+  background:var(--brand);color:#fff;min-height:40px;
+}
+.call:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.call[aria-disabled="true"]{background:var(--none-bg);color:var(--ink-3);pointer-events:none}
+.dir{
+  display:inline-flex;align-items:center;text-decoration:none;
+  font-size:14px;font-weight:500;padding:9px 16px;border-radius:8px;
+  border:1px solid var(--rule-2);color:var(--ink-2);min-height:40px;
+}
+.dir:hover{border-color:var(--ink-3)}
+
+.empty{padding:28px 16px;text-align:center;color:var(--ink-3);font-size:15px;
+  border:1px dashed var(--rule-2);border-radius:10px}
+
+/* Participating hospitals, scrolling. Purely informational: the map above
+   already carries every fact a reader needs, so nothing here is load-bearing. */
+.marquee{
+  margin:34px 0 0;padding:16px 0;border-top:1px solid var(--rule);
+  border-bottom:1px solid var(--rule);overflow:hidden;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);
+          mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);
+}
+.marquee-label{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3);
+  text-transform:uppercase;letter-spacing:.08em;margin:0 0 12px;
+}
+.marquee-track{
+  display:flex;gap:10px;width:max-content;
+  animation:slide 46s linear infinite;
+}
+.marquee:hover .marquee-track,
+.marquee:focus-within .marquee-track{animation-play-state:paused}
+@keyframes slide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.chip-h{
+  display:inline-flex;align-items:center;gap:8px;white-space:nowrap;
+  padding:9px 15px;border:1px solid var(--rule-2);border-radius:999px;
+  background:var(--card);font-size:14px;color:var(--ink-2);
+}
+.chip-h .tick{width:6px;height:6px;border-radius:50%;background:var(--brand);flex:0 0 6px}
+@media (prefers-reduced-motion: reduce){
+  .marquee-track{animation:none;flex-wrap:wrap;width:auto}
+  .marquee{-webkit-mask-image:none;mask-image:none}
+  .eyebrow .pulse{animation:none}
+}
+
+.actions-bar{display:flex;gap:10px;flex-wrap:wrap;margin:32px 0 0}
+.action{
+  flex:1 1 240px;display:flex;flex-direction:column;gap:2px;
+  padding:14px 16px;border:1px solid var(--rule-2);border-radius:10px;
+  background:var(--card);text-decoration:none;min-height:44px;
+  transition:border-color .12s;
+}
+.action:hover{border-color:var(--brand);background:var(--brand-tint)}
+.action:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.action-title{font-family:Archivo,sans-serif;font-weight:600;font-size:15px;color:var(--brand)}
+.action-sub{font-size:13px;color:var(--ink-3)}
+footer{margin-top:28px;padding-top:18px;border-top:1px solid var(--rule);
+  font-size:13px;color:var(--ink-3)}
+.credit{font-size:12px}
+footer a{color:var(--ink-2)}
+.maplibregl-popup-content{
+  font-family:"IBM Plex Sans",sans-serif;font-size:13px;
+  border-radius:8px;padding:10px 12px;
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="topbar" id="topbar">
+  <a class="link-btn primary" id="btn-signin-link" href="./login.html" hidden>Staff sign in</a>
+
+  <div class="acct" id="acct" hidden>
+    <button class="acct-btn" id="acct-btn" aria-expanded="false" aria-haspopup="true" aria-controls="acct-menu">
+      <span class="avatar" id="who-initial" aria-hidden="true"></span>
+      <span id="who-name">Account</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+
+    <div class="acct-menu" id="acct-menu" role="menu" hidden>
+      <div class="acct-head">
+        <p class="acct-name" id="menu-name"></p>
+        <p class="acct-mail" id="menu-mail"></p>
+      </div>
+      <a role="menuitem" href="./staff.html">Report bed counts</a>
+      <a role="menuitem" href="./suggest.html">Suggest a hospital</a>
+      <a role="menuitem" href="./register.html">Request access to another hospital</a>
+      <button role="menuitem" class="danger" id="btn-signout">Sign out</button>
+    </div>
+  </div>
+</div>
+
+<header>
+  <p class="eyebrow"><span class="pulse" aria-hidden="true"></span>Live availability &middot; Greater Accra</p>
+  <h1>Find a hospital bed<br>before you travel.</h1>
+  <p class="sub">Emergency, ICU and general ward availability, reported by the hospitals themselves. Always call ahead to confirm.</p>
+  <div class="glance" id="glance" aria-live="polite"></div>
+  <div class="stamp">
+    <span id="stamp-updated">Loading data</span>
+    <span id="stamp-count"></span>
+  </div>
+</header>
+
+<p class="notice" id="notice">
+  <b>Bed counts are not yet live.</b> Hospital names, locations and phone numbers below are from public
+  directories. Bed, ICU and oxygen figures are not public information and appear only once a hospital
+  reports them, so every hospital currently shows as not reported.
+</p>
+
+<div id="map" tabindex="-1" role="region" aria-label="Map of Accra hospitals"></div>
+
+<section class="locbar" aria-label="Find hospitals near a place">
+  <div class="locbar-row">
+    <button class="btn-here" id="btn-here" type="button">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/></svg>
+      Use my location
+    </button>
+    <input id="loc-input" type="text" placeholder="Or type an area: Osu, Madina, Tema"
+           autocomplete="off" enterkeyhint="search" aria-label="Area or place name">
+    <button class="btn-find" id="btn-find" type="button">Search</button>
+  </div>
+
+  <div class="loc-state" id="loc-state" hidden>
+    <span class="pin" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+    <span id="loc-label"></span>
+    <button class="loc-clear" id="loc-clear" type="button">Clear</button>
+  </div>
+
+  <p class="loc-err" id="loc-err" hidden></p>
+  <p class="loc-note" id="loc-note" hidden>
+    Distances are straight-line, not driving distance. Traffic can make a nearer
+    hospital take longer, so use Directions for real routing.
+  </p>
+</section>
+
+<div class="controls" role="group" aria-label="Filter hospitals">
+  <button class="chip" id="f-all" aria-pressed="true" data-filter="all">All hospitals</button>
+  <button class="chip" id="f-go" aria-pressed="false" data-filter="open">Beds available</button>
+  <button class="chip" id="f-oxy" aria-pressed="false" data-filter="oxygen">Oxygen on site</button>
+  <button class="chip" id="f-amb" aria-pressed="false" data-filter="ambulance">Ambulance on site</button>
+</div>
+
+<p class="count" id="result-count"></p>
+<ul class="list" id="list"></ul>
+
+<section class="marquee" aria-label="Participating hospitals">
+  <p class="marquee-label">Hospitals listed</p>
+  <div class="marquee-track" id="marquee-track"></div>
+</section>
+
+<section class="actions-bar" aria-label="Contribute to this map">
+  <a class="action" href="./staff.html">
+    <span class="action-title">Report bed counts</span>
+    <span class="action-sub">For approved hospital staff</span>
+  </a>
+  <a class="action" href="./register.html">
+    <span class="action-title">Request staff access</span>
+    <span class="action-sub">Hospital staff, reviewed before approval</span>
+  </a>
+  <a class="action" href="./suggest.html">
+    <span class="action-title">Suggest a hospital</span>
+    <span class="action-sub">Missing a facility? Anyone can submit one</span>
+  </a>
+</section>
+
+<footer>
+  <p id="disclaimer">
+    This is a school project and is not an official emergency service. In an emergency, call the
+    Ghana National Ambulance Service on 112.
+  </p>
+  <p class="credit">
+    Built with MapLibre GL JS, OpenFreeMap and Supabase. Place search by
+    <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors.
+    Open source, no tracking.
+  </p>
+</footer>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="./config.js"></script>
+<script>
+const STATUS_LABEL = {
+  available: "Beds available",
+  limited: "Few left, call first",
+  full: "Full",
+  unreported: "Not reported"
+};
+const STATUS_PIN = {
+  available: "#1d7a5f", limited: "#b06a06", full: "#b3322f", unreported: "#6e7780"
+};
+
+let FEATURES = [];
+let ORIGIN = null;   // {lat, lon, label} once the reader sets a location
+let filter = "all";
+let map = null;
+const markers = [];
+
+// Haversine. Straight-line only: honest about that in the interface, because
+// in Accra traffic a nearer hospital is not always the faster one.
+function distanceKm(aLat, aLon, bLat, bLon){
+  const R = 6371;
+  const dLat = (bLat - aLat) * Math.PI / 180;
+  const dLon = (bLon - aLon) * Math.PI / 180;
+  const p1 = aLat * Math.PI / 180, p2 = bLat * Math.PI / 180;
+  const h = Math.sin(dLat/2)**2 + Math.cos(p1) * Math.cos(p2) * Math.sin(dLon/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+function formatDistance(km){
+  if (km < 1) return Math.round(km * 1000) + " m";
+  if (km < 10) return km.toFixed(1) + " km";
+  return Math.round(km) + " km";
+}
+
+function esc(s){
+  return String(s == null ? "" : s).replace(/[&<>"']/g, c =>
+    ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+}
+
+function num(v){
+  return (v === null || v === undefined || v === "") ? null : Number(v);
+}
+
+function statusOf(p){
+  const s = p.status;
+  return STATUS_LABEL[s] ? s : "unreported";
+}
+
+// Google Maps URL API. Supplying only a destination makes Maps use the device's
+// current location as the origin and start routing immediately, so the driver
+// never types anything. On phones this opens the Google Maps app when installed.
+// The coordinates are authoritative; the hospital name rides along only as the
+// label shown in the app, so a wrong name cannot send anyone to the wrong place.
+function directionsUrl(lat, lon){
+  const params = new URLSearchParams({
+    api: "1",
+    destination: lat + "," + lon,
+    travelmode: "driving"
+  });
+  return "https://www.google.com/maps/dir/?" + params.toString();
+}
+
+function matches(p){
+  if (filter === "all") return true;
+  if (filter === "open") return statusOf(p) === "available" || statusOf(p) === "limited";
+  if (filter === "oxygen") return p.oxygen_available === true;
+  if (filter === "ambulance") return p.ambulance_available === true;
+  return true;
+}
+
+function cell(label, value){
+  const has = value !== null;
+  return '<div class="cell"><span class="k">' + esc(label) + '</span>' +
+         '<span class="v' + (has ? '' : ' dim') + '">' + (has ? value : "\u2014") + '</span></div>';
+}
+
+function render(){
+  const list = document.getElementById("list");
+  let rows = FEATURES.filter(f => matches(f.properties));
+
+  // With a location set, nearest first. Without one, keep the source order.
+  if (ORIGIN){
+    rows = rows
+      .map(f => {
+        const [lon, lat] = f.geometry.coordinates;
+        return { f, km: distanceKm(ORIGIN.lat, ORIGIN.lon, lat, lon) };
+      })
+      .sort((a, b) => a.km - b.km)
+      .map(x => { x.f._km = x.km; return x.f; });
+  }
+
+  document.getElementById("result-count").textContent =
+    rows.length + (rows.length === 1 ? " hospital" : " hospitals") +
+    (filter === "all" ? "" : " matching this filter") +
+    (ORIGIN ? ", nearest first" : "");
+
+  if (!rows.length){
+    list.innerHTML = '<li class="empty">No hospitals match this filter right now. ' +
+                     'Try “All hospitals” to see everything on the map.</li>';
+    return;
+  }
+
+  list.innerHTML = rows.map(f => {
+    const p = f.properties;
+    const st = statusOf(p);
+    const phone = (p.main_phone || "").trim();
+    const tel = phone.replace(/[^\d+]/g, "");
+    const [lon, lat] = f.geometry.coordinates;
+
+    const callBtn = tel
+      ? '<a class="call" href="tel:' + esc(tel) + '">Call ' + esc(phone) + '</a>'
+      : '<a class="call" aria-disabled="true" href="#">No phone number on file</a>';
+
+    return '<li class="row">' +
+      '<div class="band ' + st + '" aria-hidden="true"></div>' +
+      '<div class="body">' +
+        '<div class="top">' +
+          '<h2 class="name">' + esc(p.hospital_name) + '</h2>' +
+          '<span style="display:inline-flex;align-items:center;gap:7px">' +
+            (ORIGIN && f._km !== undefined
+              ? '<span class="dist">' + formatDistance(f._km) + "</span>" : "") +
+            '<span class="tag ' + st + '">' + esc(STATUS_LABEL[st]) + "</span>" +
+          "</span>" +
+        '</div>' +
+        '<p class="meta">' + esc(p.hospital_type || "") +
+          (p.region_area ? " &middot; " + esc(p.region_area) : "") +
+          (p.address ? " &middot; " + esc(p.address) : "") + '</p>' +
+        (p.location_confidence === "verified" ? "" :
+          '<p class="approx">Location not yet verified. Call before travelling.</p>') +
+        '<div class="readout">' +
+          cell("Emergency", num(p.emergency_beds)) +
+          cell("ICU", num(p.icu_beds)) +
+          cell("General", num(p.general_beds)) +
+          '<div class="cell"><span class="k">Oxygen</span><span class="v' +
+            (p.oxygen_available === null || p.oxygen_available === undefined ? " dim" : "") + '">' +
+            (p.oxygen_available === true ? "Yes" : p.oxygen_available === false ? "No" : "\u2014") +
+          '</span></div>' +
+        '</div>' +
+        '<div class="actions">' + callBtn +
+          '<a class="dir" target="_blank" rel="noopener" href="' + directionsUrl(lat, lon) + '">Directions</a>' +
+        '</div>' +
+      '</div></li>';
+  }).join("");
+}
+
+function drawMarkers(){
+  markers.forEach(m => m.remove());
+  markers.length = 0;
+  if (!map) return;
+
+  FEATURES.filter(f => matches(f.properties)).forEach(f => {
+    const p = f.properties;
+    const st = statusOf(p);
+    const el = document.createElement("div");
+    el.style.cssText =
+      "width:16px;height:16px;border-radius:50%;cursor:pointer;" +
+      "background:" + (p["marker-color"] || STATUS_PIN[st]) + ";" +
+      "border:2.5px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.35)";
+    el.setAttribute("role", "button");
+    el.setAttribute("aria-label", p.hospital_name + ", " + STATUS_LABEL[st]);
+
+    const popup = new maplibregl.Popup({ offset: 14 }).setHTML(
+      "<strong>" + esc(p.hospital_name) + "</strong><br>" +
+      esc(STATUS_LABEL[st]) +
+      (p.main_phone ? '<br><a href="tel:' + esc(p.main_phone.replace(/[^\d+]/g,"")) + '">' +
+        esc(p.main_phone) + "</a>" : "")
+    );
+
+    markers.push(
+      new maplibregl.Marker({ element: el })
+        .setLngLat(f.geometry.coordinates)
+        .setPopup(popup)
+        .addTo(map)
+    );
+  });
+}
+
+/* --------------------------------------------------------------- location -- */
+
+function setOrigin(lat, lon, label){
+  ORIGIN = { lat, lon, label };
+  document.getElementById("loc-label").textContent = "Showing distance from " + label;
+  document.getElementById("loc-state").hidden = false;
+  document.getElementById("loc-note").hidden = false;
+  document.getElementById("loc-err").hidden = true;
+  render();
+  drawMarkers();
+  if (map) map.flyTo({ center: [lon, lat], zoom: 12, duration: 900 });
+}
+
+function clearOrigin(){
+  ORIGIN = null;
+  document.getElementById("loc-state").hidden = true;
+  document.getElementById("loc-note").hidden = true;
+  document.getElementById("loc-err").hidden = true;
+  document.getElementById("loc-input").value = "";
+  render();
+  drawMarkers();
+}
+
+function locError(message){
+  const el = document.getElementById("loc-err");
+  el.textContent = message;
+  el.hidden = false;
+}
+
+function useMyLocation(){
+  const btn = document.getElementById("btn-here");
+  document.getElementById("loc-err").hidden = true;
+
+  if (!navigator.geolocation)
+    return locError("This browser cannot report a location. Type an area instead.");
+
+  btn.disabled = true;
+  const label = btn.innerHTML;
+  btn.textContent = "Locating\u2026";
+
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      btn.disabled = false;
+      btn.innerHTML = label;
+      setOrigin(pos.coords.latitude, pos.coords.longitude, "your location");
+    },
+    err => {
+      btn.disabled = false;
+      btn.innerHTML = label;
+      // Each case needs a different action from the reader, so name which it is.
+      if (err.code === 1)
+        locError("Location permission was refused. Allow it in your browser settings, or type an area below.");
+      else if (err.code === 3)
+        locError("Locating took too long. Try again, or type an area instead.");
+      else
+        locError("Could not read your location. Type an area instead.");
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+  );
+}
+
+// Areas already in the dataset are matched first: it costs no network call and
+// works when the geocoder is unreachable.
+function matchKnownArea(query){
+  const q = query.trim().toLowerCase();
+  if (!q) return null;
+
+  const hit = FEATURES.find(f => {
+    const p = f.properties;
+    return (p.region_area || "").toLowerCase() === q
+        || (p.hospital_name || "").toLowerCase().includes(q);
+  });
+  if (!hit) return null;
+
+  const [lon, lat] = hit.geometry.coordinates;
+  return { lat, lon, label: hit.properties.region_area || hit.properties.hospital_name };
+}
+
+async function findPlace(){
+  const query = document.getElementById("loc-input").value.trim();
+  document.getElementById("loc-err").hidden = true;
+
+  if (!query) return locError("Type an area or place name first.");
+
+  const known = matchKnownArea(query);
+  if (known) return setOrigin(known.lat, known.lon, known.label);
+
+  const btn = document.getElementById("btn-find");
+  btn.disabled = true;
+  btn.textContent = "Searching\u2026";
+
+  try {
+    // OpenStreetMap's geocoder, limited to Ghana and to the Accra area so a
+    // common place name cannot drop the reader on another continent.
+    const url = "https://nominatim.openstreetmap.org/search?format=json&limit=1"
+      + "&countrycodes=gh&viewbox=-0.7,6.1,0.4,5.2&bounded=1"
+      + "&q=" + encodeURIComponent(query);
+
+    const res = await fetch(url, { headers: { "Accept": "application/json" } });
+    if (!res.ok) throw new Error("geocoder");
+
+    const results = await res.json();
+    if (!results.length)
+      return locError("No place found by that name in Greater Accra. Try a nearby area, or use your location.");
+
+    const place = results[0];
+    const label = (place.display_name || query).split(",")[0];
+    setOrigin(parseFloat(place.lat), parseFloat(place.lon), label);
+  } catch {
+    locError("Could not search for that place right now. Use your location, or try again.");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Search";
+  }
+}
+
+document.getElementById("btn-here").addEventListener("click", useMyLocation);
+document.getElementById("btn-find").addEventListener("click", findPlace);
+document.getElementById("loc-clear").addEventListener("click", clearOrigin);
+document.getElementById("loc-input").addEventListener("keydown",
+  ev => { if (ev.key === "Enter") findPlace(); });
+
+function setFilter(next){
+  filter = next;
+  document.querySelectorAll(".chip").forEach(c =>
+    c.setAttribute("aria-pressed", String(c.dataset.filter === next)));
+  render();
+  drawMarkers();
+}
+
+document.querySelectorAll(".chip").forEach(c =>
+  c.addEventListener("click", () => setFilter(c.dataset.filter)));
+
+function initMap(){
+  try {
+    map = new maplibregl.Map({
+      container: "map",
+      style: "https://tiles.openfreemap.org/styles/liberty",
+      center: [-0.196, 5.578],
+      zoom: 10.6,
+      attributionControl: true
+    });
+    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+    map.on("load", drawMarkers);
+    map.on("error", () => {});
+  } catch (err) {
+    document.getElementById("map").innerHTML =
+      '<p style="padding:20px;color:var(--ink-3);font-size:14px">' +
+      'The map could not load. The hospital list below still works.</p>';
+  }
+}
+
+// Rows from Supabase arrive flat. Reshape them into the same GeoJSON features
+// the rest of this page already understands, so one rendering path serves both
+// the live source and the fallback file.
+function rowsToFeatures(rows){
+  return rows
+    .filter(r => r.latitude != null && r.longitude != null)
+    .map(r => ({
+      type: "Feature",
+      geometry: { type: "Point", coordinates: [Number(r.longitude), Number(r.latitude)] },
+      properties: {
+        hospital_name: r.name,
+        hospital_type: r.type,
+        region_area: r.region_area,
+        address: r.address,
+        main_phone: r.main_phone,
+        emergency_beds: r.emergency_beds,
+        icu_beds: r.icu_beds,
+        general_beds: r.general_beds,
+        oxygen_available: r.oxygen_available,
+        ambulance_available: r.ambulance_available,
+        status: r.status,
+        last_updated: r.last_updated,
+        updated_by: r.updated_by,
+        notes: r.notes,
+        location_confidence: r.location_confidence,
+        listing_status: "published"
+      }
+    }));
+}
+
+let sb = null;
+function supabaseReady(){
+  if (sb) return sb;
+  if (!window.SUPABASE_URL || window.SUPABASE_URL.includes("YOUR-PROJECT-REF")) return null;
+  sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+  return sb;
+}
+
+async function loadFromSupabase(){
+  const client = supabaseReady();
+  if (!client) return null;
+  const { data, error } = await client.from("public_hospitals").select("*");
+  if (error || !data || !data.length) return null;
+  return rowsToFeatures(data);
+}
+
+async function loadFromFile(){
+  const res = await fetch(window.FALLBACK_GEOJSON || "./data/hospitals.geojson");
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  const data = await res.json();
+  return (data.features || []).filter(f =>
+    f && f.geometry && f.geometry.coordinates &&
+    f.properties.listing_status !== "pending_review");
+}
+
+(async () => {
+  let live = false;
+  try {
+    const fromServer = await loadFromSupabase();
+    if (fromServer) { FEATURES = fromServer; live = true; }
+    else            { FEATURES = await loadFromFile(); }
+  } catch (err) {
+    try { FEATURES = await loadFromFile(); }
+    catch {
+      document.getElementById("stamp-updated").textContent = "Data unavailable";
+      document.getElementById("list").innerHTML =
+        '<li class="empty">The hospital data could not be loaded. Refresh the page to try again.</li>';
+      return;
+    }
+  }
+
+  {
+
+    const reported = FEATURES.filter(f => statusOf(f.properties) !== "unreported");
+    const stamps = FEATURES.map(f => f.properties.last_updated).filter(Boolean).sort();
+
+    document.getElementById("stamp-updated").textContent = stamps.length
+      ? "Last report " + new Date(stamps[stamps.length - 1]).toLocaleString("en-GB",
+          { day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" })
+      : "No reports yet";
+    document.getElementById("stamp-count").textContent =
+      FEATURES.length + " hospitals listed";
+
+    if (reported.length) document.getElementById("notice").hidden = true;
+
+    if (!live) {
+      const note = document.getElementById("stamp-count");
+      note.textContent += " \u00b7 showing last published data";
+    }
+
+    renderGlance();
+    renderMarquee();
+    render();
+    initMap();
+  }
+})();
+
+// Counts by status, so the reader learns whether anything is open before they
+// read a single row. Zero-count states are omitted rather than shown as 0.
+function renderGlance(){
+  const box = document.getElementById("glance");
+  if (!box) return;
+
+  const tally = { available:0, limited:0, full:0, unreported:0 };
+  FEATURES.forEach(f => { tally[statusOf(f.properties)]++; });
+
+  const order = [
+    ["available",  "with beds now"],
+    ["limited",    "few left"],
+    ["full",       "full"],
+    ["unreported", "not reported"]
+  ];
+
+  box.innerHTML = order
+    .filter(([key]) => tally[key] > 0)
+    .map(([key, label]) =>
+      '<span class="stat ' + key + '">' +
+        '<span class="n">' + tally[key] + "</span>" +
+        '<span class="l">' + label + "</span>" +
+      "</span>")
+    .join("");
+}
+
+// Two identical runs of the list sit side by side, and the track scrolls by
+// exactly half its width, so the loop closes with no visible jump.
+function renderMarquee(){
+  const track = document.getElementById("marquee-track");
+  if (!track) return;
+
+  const names = FEATURES
+    .map(f => f.properties.hospital_name)
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b));
+
+  if (!names.length) { track.closest(".marquee").hidden = true; return; }
+
+  const run = names.map(n =>
+    '<span class="chip-h"><span class="tick" aria-hidden="true"></span>' +
+    esc(n) + "</span>").join("");
+
+  // The duplicate is hidden from assistive technology so names are not read twice.
+  track.innerHTML = run +
+    '<span aria-hidden="true" style="display:flex;gap:10px">' + run + "</span>";
+}
+
+/* ---------------------------------------------------------------- account -- */
+
+// One function owns the strip, so a name and a sign-in button can never appear
+// together the way they did when two routines shared the job.
+function paintAccount(user, name){
+  const signedIn = Boolean(user);
+  document.getElementById("acct").hidden = !signedIn;
+  document.getElementById("btn-signin-link").hidden = signedIn;
+  if (!signedIn){
+    document.getElementById("acct-menu").hidden = true;
+    document.getElementById("acct-btn").setAttribute("aria-expanded", "false");
+    return;
+  }
+
+  const shown = name || "Account";
+  document.getElementById("who-name").textContent = shown;
+  document.getElementById("who-initial").textContent = shown.charAt(0).toUpperCase();
+  document.getElementById("menu-name").textContent = shown;
+  document.getElementById("menu-mail").textContent = user.email || "";
+}
+
+// Prefer the name given at registration, fall back to the email prefix. Never
+// return empty, because a blank greeting reads as a fault.
+async function nameFor(client, user){
+  const meta = (user?.user_metadata?.full_name || "").trim();
+  if (meta) return meta.split(/\s+/)[0];
+
+  try {
+    const { data } = await client.from("staff_requests").select("full_name").limit(1);
+    const full = (data && data[0] && data[0].full_name || "").trim();
+    if (full) return full.split(/\s+/)[0];
+  } catch { /* the email prefix will do */ }
+
+  const email = user?.email || "";
+  return email ? email.split("@")[0] : "Account";
+}
+
+function wireAccount(){
+  const client = supabaseReady();
+
+  if (!client){
+    document.getElementById("topbar").hidden = true;
+    return;
+  }
+
+  const btn  = document.getElementById("acct-btn");
+  const menu = document.getElementById("acct-menu");
+
+  function closeMenu(){
+    menu.hidden = true;
+    btn.setAttribute("aria-expanded", "false");
+  }
+
+  btn.addEventListener("click", ev => {
+    ev.stopPropagation();
+    const opening = menu.hidden;
+    menu.hidden = !opening;
+    btn.setAttribute("aria-expanded", String(opening));
+  });
+
+  // Clicking elsewhere or pressing Escape closes it, which is what a menu is
+  // expected to do and avoids it hanging open over the map.
+  document.addEventListener("click", ev => {
+    if (!menu.hidden && !menu.contains(ev.target)) closeMenu();
+  });
+  document.addEventListener("keydown", ev => {
+    if (ev.key === "Escape" && !menu.hidden){ closeMenu(); btn.focus(); }
+  });
+
+  document.getElementById("btn-signout").addEventListener("click", async () => {
+    closeMenu();
+    await client.auth.signOut();
+  });
+
+  // The listener is the single source of truth: it fires on load, sign-in,
+  // sign-out and token refresh.
+  client.auth.onAuthStateChange(async (_event, session) => {
+    const user = session?.user || null;
+    paintAccount(user, user ? await nameFor(client, user) : "");
+  });
+}
+
+wireAccount();
+</script>
+</body>
+</html>
