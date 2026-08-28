@@ -1,0 +1,12 @@
+# Accra Hospital Beds
+# Open-source student project mapping hospital bed availability in Greater Accra.
+# Source: https://github.com/desmond-lartey/ghana-hospital-beds
+
+User-agent: *
+Allow: /
+
+# Sign-in and account pages hold nothing worth indexing.
+Disallow: /login.html
+Disallow: /staff.html
+
+Sitemap: https://ghana-hospital-beds.vercel.app/sitemap.xml

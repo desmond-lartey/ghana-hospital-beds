@@ -8,13 +8,13 @@
 //
 // The service role key is a different matter. It bypasses row level security
 // entirely, so it must never appear in this file or anywhere else the browser
-// can reach it. 
+// can reach it.
 
-window.SUPABASE_URL = "https://pbyzmmjxuyumoofziuen.supabase.co";
-window.SUPABASE_ANON_KEY = "sb_publishable_D8DcEEaApVpvfO3JNRTPEQ_E83bBgLF";
+window.SUPABASE_URL = "https://YOUR-PROJECT-REF.supabase.co";
+window.SUPABASE_ANON_KEY = "YOUR-ANON-KEY";
 
 // Read the map from Supabase when it is reachable, and fall back to the file
 // published alongside this page when it is not. The public map is the part
 // someone opens during an emergency, so it degrades to last-known data rather
-// than failing. 
+// than failing.
 window.FALLBACK_GEOJSON = "./data/hospitals.geojson";

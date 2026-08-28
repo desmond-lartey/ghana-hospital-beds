@@ -153,6 +153,20 @@ input:focus{
 .ghost:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
 
 .foot{text-align:center;margin:22px 0 0;font-size:13px;color:var(--ink-3);line-height:1.6}
+.provenance{
+  margin:18px 0 0;padding:18px 20px;border:1px solid var(--rule);
+  border-radius:14px;background:var(--card);
+}
+.provenance h3{
+  font-family:Archivo,sans-serif;font-weight:700;font-size:14px;
+  margin:0 0 10px;color:var(--ink);
+}
+.provenance p{
+  margin:0 0 10px;font-size:13px;line-height:1.65;color:var(--ink-2);
+}
+.provenance p:last-child{margin-bottom:0}
+.provenance a{color:var(--brand)}
+.provenance .mini{font-size:12px;color:var(--ink-3);padding-top:8px;border-top:1px solid var(--rule)}
 .foot a{color:var(--ink-2)}
 .tag{
   display:inline-flex;align-items:center;gap:7px;margin:0 0 4px;
@@ -232,6 +246,31 @@ input:focus{
       Not staff? <a href="./index.html">Find a hospital bed</a>.
     </p>
   </div>
+
+  <section class="provenance">
+    <h3>About this site</h3>
+    <p>
+      Accra Hospital Beds is an open-source student project mapping bed availability
+      at hospitals in Greater Accra. It is not affiliated with any hospital, bank,
+      government agency or commercial service, and it does not impersonate one.
+    </p>
+    <p>
+      This sign-in is only for hospital staff who report their own ward's bed counts.
+      Accounts are created on request and approved by hand. We never ask for payment
+      details, identity documents, or any information beyond an email address and a
+      password you choose.
+    </p>
+    <p>
+      Sign-in is handled by <a href="https://supabase.com" rel="noopener">Supabase</a>.
+      The full source code is public at
+      <a href="https://github.com/desmond-lartey/ghana-hospital-beds" rel="noopener">github.com/desmond-lartey/ghana-hospital-beds</a>,
+      so anyone can read exactly what this page does with what you type.
+    </p>
+    <p class="mini">
+      In a medical emergency in Ghana, call the National Ambulance Service on 112.
+      This site is not an emergency service.
+    </p>
+  </section>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>

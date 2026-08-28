@@ -163,6 +163,36 @@ select reject_hospital_suggestion('<suggestion-id>', 'Could not confirm the faci
 The function refuses to publish a facility whose name already appears in `hospitals`,
 so a duplicate submission raises an error rather than putting two pins on the map.
 
+## 8. What staff may edit
+
+Run `migrations/0004_staff_editable_columns.sql`.
+
+Row level security answers "which rows a staff account may update". This migration
+answers "which fields on that row", using column privileges.
+
+Staff may change bed counts, and their hospital's phone number, address, area, facility
+type and notes. They may not change the hospital's name, its position on the map, its
+published state, its location confidence, or its HeFRA licence number.
+
+The split follows the cost of being wrong. A wrong phone number wastes a call. A wrong
+position sends an ambulance to the wrong place, and the driver acting on it has no way to
+tell. So position stays an administrator decision, checked before it takes effect.
+
+The limit is enforced by the database, so it holds regardless of what a browser sends. An
+attempt to update a withheld column fails with a permission error even from an account
+that owns the row.
+
+To correct a name or a position, do it directly:
+
+```sql
+update hospitals
+   set location = st_point(-0.2264, 5.5359)::geography,
+       location_confidence = 'verified'
+ where name = 'Korle-Bu Teaching Hospital';
+```
+
+---
+
 ## Things worth knowing
 
 **Free projects pause after a period without activity.** Daily reporting keeps a project awake, but a long university break might not. Check the current threshold on Supabase's pricing page, and open the dashboard before a demo if the project has been idle.
