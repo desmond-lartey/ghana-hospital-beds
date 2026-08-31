@@ -1,18 +1,15 @@
 # Accra Hospital Beds — security contact
 # https://www.rfc-editor.org/rfc/rfc9116
 
-Contact: https://github.com/desmond-lartey/ghana-hospital-beds/issues
+Contact: https://ghana-hospital-beds.vercel.app/suggest.html
 Expires: 2027-12-31T23:59:59.000Z
 Preferred-Languages: en
 Canonical: https://ghana-hospital-beds.vercel.app/.well-known/security.txt
-Policy: https://github.com/desmond-lartey/ghana-hospital-beds#readme
 
-# This is an open-source student project mapping hospital bed availability in
-# Greater Accra, Ghana. It is not affiliated with any hospital, bank, government
-# agency or commercial service, and does not impersonate one.
+# This is a student project mapping hospital bed availability in Greater Accra,
+# Ghana. It is not affiliated with any hospital, bank, government agency or
+# commercial service, and does not impersonate one.
 #
 # The sign-in page collects an email address and a password for hospital staff
 # who report their own ward's bed counts. Authentication is handled by Supabase.
 # No payment details, identity documents or other personal data are requested.
-#
-# Source code: https://github.com/desmond-lartey/ghana-hospital-beds

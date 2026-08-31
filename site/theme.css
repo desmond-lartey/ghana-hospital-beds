@@ -84,22 +84,6 @@ a{color:var(--navy)}
 }
 .skip:focus{left:0}
 
-/* ---------------------------------------------------------------- utility -- */
-/* Thin strip above the header. Carries the two things that are true on every
-   page: where the code lives, and the number to call in a real emergency. */
-.utility{background:#fff;border-bottom:1px solid var(--rule)}
-.utility .shell{
-  display:flex;align-items:center;justify-content:flex-end;gap:20px;
-  min-height:40px;flex-wrap:wrap;
-}
-.utility a{
-  display:inline-flex;align-items:center;gap:7px;
-  font-size:13px;font-weight:600;color:var(--navy);text-decoration:none;
-}
-.utility a:hover{color:var(--red)}
-.utility .emergency{color:var(--red)}
-.utility svg{width:16px;height:16px}
-
 /* ----------------------------------------------------------------- header -- */
 .site-head{
   position:sticky;top:0;z-index:60;background:#fff;
@@ -113,15 +97,15 @@ a{color:var(--navy)}
 /* Logo lockup: three raked bars, then the name. The rake is the only italic
    gesture on the site, which is what makes it read as a mark and not a word. */
 .brand{display:flex;align-items:center;gap:11px;text-decoration:none;flex:0 0 auto}
-.brand-mark{width:34px;height:32px;flex:0 0 34px;display:block}
+.brand-mark{width:30px;height:34px;flex:0 0 30px;display:block}
 .brand-text{display:flex;flex-direction:column;line-height:1}
 .brand-text b{
   font-family:Archivo,sans-serif;font-weight:800;font-size:19px;
   color:var(--red);letter-spacing:-.02em;
 }
 .brand-text span{
-  font-family:Archivo,sans-serif;font-weight:700;font-size:10.5px;
-  color:var(--navy);letter-spacing:.16em;margin-top:3px;
+  font-family:Archivo,sans-serif;font-weight:600;font-size:11.5px;
+  color:var(--navy);margin-top:2px;
 }
 
 .nav{display:flex;align-items:center;gap:4px;margin-left:auto}
@@ -307,8 +291,8 @@ a{color:var(--navy)}
 .section-tint{background:var(--mist-2)}
 .section-mist{background:var(--mist-3)}
 .eyebrow{
-  font-family:Archivo,sans-serif;font-weight:700;font-size:13px;
-  letter-spacing:.16em;color:var(--red);margin:0 0 16px;
+  font-family:Archivo,sans-serif;font-weight:700;font-size:15px;
+  color:var(--red);margin:0 0 14px;
 }
 .section-title{
   font-size:clamp(28px,3.6vw,40px);font-weight:700;line-height:1.14;margin:0 0 14px;
@@ -322,9 +306,10 @@ a{color:var(--navy)}
 .intro-grid{
   display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center;
 }
+.intro-copy .section-title{font-size:clamp(26px,3.2vw,34px);margin:0 0 20px}
 .intro-copy p{
-  font-size:clamp(18px,2.1vw,23px);line-height:1.5;color:var(--navy);
-  font-weight:400;margin:0 0 18px;max-width:34ch;
+  font-size:clamp(17px,1.8vw,19.5px);line-height:1.6;color:var(--navy);
+  font-weight:400;margin:0 0 16px;max-width:44ch;
 }
 .intro-copy p:last-child{margin-bottom:0}
 .intro-panel{
@@ -501,34 +486,20 @@ li.row .actions{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 0}
   border:1px dashed var(--rule-2);border-radius:5px;background:#fff;
 }
 
-/* ---------------------------------------------------------------- split -- */
-/* Two columns: an illustration of the report on the left, the invitation to
-   make one on the right. */
-.split{display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:center}
-.split-media{
-  background:linear-gradient(150deg,var(--navy) 0%,var(--navy-3) 100%);
-  border-radius:6px;padding:36px;color:#fff;position:relative;overflow:hidden;
-}
-.split-media h4{color:#fff;font-size:15px;font-weight:700;margin:0 0 4px}
-.split-media .mock-sub{font-size:13px;color:rgba(255,255,255,.62);margin:0 0 22px}
-.mock{background:#fff;border-radius:6px;padding:20px;color:var(--ink)}
-.mock-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--rule)}
-.mock-row:last-of-type{border-bottom:none}
-.mock-row span{font-size:14.5px;color:var(--ink-2);font-weight:500}
-.mock-row b{font-family:Archivo,sans-serif;font-size:19px;color:var(--navy);font-variant-numeric:tabular-nums}
-.mock-foot{
-  display:flex;align-items:center;gap:9px;margin:14px 0 0;padding:11px 13px;
-  background:var(--go-bg);border-radius:4px;font-size:13.5px;
-  color:var(--go);font-weight:600;
-}
-.split-card{
-  background:#fff;border-radius:6px;padding:38px 36px;box-shadow:var(--shadow);
-}
-.split-card h2{font-size:clamp(24px,2.7vw,32px);font-weight:700;line-height:1.2;margin:0 0 14px}
-.split-card > p{font-size:15.5px;color:var(--ink-2);margin:0 0 24px}
-.ticks{list-style:none;margin:0 0 28px;padding:0;display:grid;gap:13px}
+/* ------------------------------------------------------------ staff call -- */
+/* One centred block. There is no mocked-up screenshot here: an invented report
+   for a named hospital would sit next to twenty real ones that have not
+   reported, and a reader has no way to tell which is which. */
+.cta-block{max-width:800px;margin:0 auto;text-align:center}
+.cta-block .section-lede{margin-bottom:34px}
+.ticks{list-style:none;margin:0 0 30px;padding:0;display:grid;gap:14px}
 .ticks li{display:flex;align-items:flex-start;gap:11px;font-size:15.5px;color:var(--ink)}
 .ticks svg{width:17px;height:17px;color:var(--sky);flex:0 0 17px;margin-top:4px}
+.ticks-2{
+  grid-template-columns:1fr 1fr;gap:16px 34px;text-align:left;
+  max-width:720px;margin:0 auto 32px;
+}
+.cta-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
 
 /* ---------------------------------------------------------------- marquee -- */
 .marquee{
@@ -552,15 +523,8 @@ li.row .actions{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 0}
 .foot-brand .brand-text b{color:#fff}
 .foot-brand .brand-text span{color:rgba(255,255,255,.7)}
 .foot-brand p{font-size:13.5px;color:rgba(255,255,255,.7);margin:20px 0 0;line-height:1.7}
-.foot-social{display:flex;gap:12px;margin:20px 0 0}
-.foot-social a{
-  width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.12);
-  display:flex;align-items:center;justify-content:center;color:#fff;
-}
-.foot-social a:hover{background:var(--red)}
-.foot-social svg{width:17px;height:17px}
 .site-foot h4{
-  color:#fff;font-size:15px;font-weight:700;letter-spacing:.12em;margin:0 0 20px;
+  color:#fff;font-size:16px;font-weight:700;margin:0 0 18px;
 }
 .foot-links{list-style:none;margin:0;padding:0;display:grid;gap:12px}
 .foot-links a{color:rgba(255,255,255,.82);text-decoration:none;font-size:14.5px}
@@ -692,29 +656,37 @@ pre{
   .quick-grid{grid-template-columns:repeat(2,1fr)}
   .pcards{grid-template-columns:repeat(2,1fr);gap:22px 22px;row-gap:64px}
   .intro-grid{grid-template-columns:1fr;gap:38px}
-  .split{grid-template-columns:1fr;gap:32px}
+  .ticks-2{grid-template-columns:1fr;gap:14px}
   .foot-grid{grid-template-columns:1fr 1fr;gap:34px}
 }
-@media (max-width:900px){
+/* The header needs about 1180px to lay out inline once a signed-in account
+   chip or the Staff sign in button is present. That is the same width as the
+   content shell, so the rule is simply: if the viewport is narrower than the
+   shell, the nav becomes a menu. */
+@media (max-width:1180px){
   .burger{display:flex}
   .nav{
     display:none;position:absolute;left:0;right:0;top:100%;background:#fff;
     border-bottom:1px solid var(--rule);box-shadow:var(--shadow);
     flex-direction:column;align-items:stretch;gap:0;padding:10px 16px 18px;
   }
-  .site-head{position:sticky}
   .site-head .shell{position:relative;flex-wrap:wrap}
   .nav[data-open="true"]{display:flex}
   .nav > a,.nav-top{width:100%;justify-content:space-between;padding:14px 8px;font-size:16px;border-radius:6px}
   .nav > a:hover,.nav-top:hover{background:var(--mist-2)}
+  .drop{width:100%}
   .drop-menu{position:static;box-shadow:none;border:none;padding:0 0 6px 12px;min-width:0}
   .drop-menu a{padding:12px 10px}
+}
+
+@media (max-width:900px){
   .head-tools .phone-pill span{display:none}
   .phone-pill{padding:11px 14px}
   .band-grid{grid-template-columns:1fr;gap:22px}
   .section{padding:56px 0}
   .hero .shell{padding-top:48px;padding-bottom:118px}
 }
+
 @media (max-width:640px){
   .shell,.shell-narrow{padding:0 16px}
   .quick{margin-top:-64px}
@@ -729,10 +701,7 @@ pre{
   .foot-grid{grid-template-columns:1fr;gap:32px}
   .grid-3,.grid-2{grid-template-columns:1fr}
   .panel{padding:26px 20px}
-  .split-card{padding:28px 22px}
-  .split-media{padding:24px}
   li.row .body{padding:16px 16px}
-  .utility .shell{justify-content:center;gap:16px}
 }
 
 @media (prefers-reduced-motion: reduce){
