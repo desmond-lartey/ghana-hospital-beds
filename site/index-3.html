@@ -3,477 +3,495 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Accra hospital beds</title>
+<title>Accra Hospital Beds — live bed availability across Greater Accra</title>
 <link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="./favicon.svg">
 <meta name="description" content="Live bed, ICU and oxygen availability across Accra hospitals. Check before you travel, and call ahead.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.min.css" rel="stylesheet">
-<style>
-:root{
-  /* Crimson brand. The "full" status below is a deeper maroon so the two read
-     differently, and every status also carries a text label, so colour is never
-     the only thing telling a reader what they are looking at. */
-  --brand:#d42a3f;
-  --brand-2:#b21e31;
-  --brand-deep:#7c1120;
-  --brand-tint:#fdeced;
-  --brand-glow:rgba(212,42,63,.28);
-
-  --ink:#1b1215;--ink-2:#5a4a4f;--ink-3:#8d7c81;
-  --paper:#fffaf8;--card:#fff;--rule:#f0e3e1;--rule-2:#e0cdcb;
-
-  --go:#0e7a54;--go-bg:#e2f4ec;--go-line:#b6e0cf;
-  --wait:#b8730a;--wait-bg:#fdf0dc;--wait-line:#f2d9a8;
-  --stop:#8e1c2c;--stop-bg:#fae9eb;--stop-line:#eec4ca;
-  --none:#8d7c81;--none-bg:#f6efee;
-}
-@media (prefers-color-scheme: dark){
-  :root{
-    --brand:#8f9fe0;--brand-2:#a9b6ea;--brand-tint:#1b2140;
-    --ink:#eceef3;--ink-2:#a6adbe;--ink-3:#7b8296;
-    --paper:#0f1116;--card:#171a21;--rule:#282d38;--rule-2:#39404e;
-    --go:#5cc79f;--go-bg:#12312a;--wait:#e0a038;--wait-bg:#39290f;
-    --stop:#f0736f;--stop-bg:#3a1a19;--none:#8b949d;--none-bg:#20242d;
-  }
-}
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{
-  background:var(--paper); color:var(--ink);
-  font-family:"IBM Plex Sans",system-ui,sans-serif;
-  font-size:16px; line-height:1.5;
-  -webkit-font-smoothing:antialiased;
-}
-.wrap{max-width:920px;margin:0 auto;padding:0 16px 64px}
-
-/* Account strip. Sits above everything so the answer to "am I signed in?" is
-   never something the reader has to hunt for. */
-.topbar{
-  display:flex;align-items:center;justify-content:flex-end;gap:10px;
-  flex-wrap:wrap;padding:12px 0 0;min-height:44px;
-}
-.who-chip{
-  display:inline-flex;align-items:center;gap:8px;
-  font-size:14px;color:var(--ink-2);
-}
-.who-chip .avatar{
-  width:26px;height:26px;border-radius:50%;flex:0 0 26px;
-  background:var(--brand);color:#fff;display:flex;align-items:center;
-  justify-content:center;font-family:Archivo,sans-serif;font-weight:600;font-size:12px;
-}
-.who-chip b{color:var(--ink);font-weight:600}
-.link-btn{
-  appearance:none;border:1px solid var(--rule-2);background:var(--card);
-  font:inherit;font-size:14px;font-weight:500;color:var(--ink-2);cursor:pointer;
-  padding:8px 14px;border-radius:8px;min-height:40px;
-}
-.link-btn:hover{border-color:var(--brand);color:var(--brand)}
-.link-btn:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
-.link-btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
-.link-btn.primary:hover{background:var(--brand-2);border-color:var(--brand-2);color:#fff}
-
-.acct{position:relative}
-.acct-btn{
-  display:inline-flex;align-items:center;gap:9px;cursor:pointer;font:inherit;
-  font-size:14px;font-weight:600;color:#fff;background:var(--brand);
-  border:1px solid var(--brand);padding:8px 13px;border-radius:10px;min-height:42px;
-}
-.acct-btn:hover{background:var(--brand-2);border-color:var(--brand-2)}
-.acct-btn:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
-.acct-btn .avatar{
-  width:24px;height:24px;border-radius:50%;flex:0 0 24px;background:rgba(255,255,255,.22);
-  display:flex;align-items:center;justify-content:center;
-  font-family:Archivo,sans-serif;font-weight:700;font-size:11px;
-}
-.acct-menu{
-  position:absolute;right:0;top:calc(100% + 8px);z-index:40;
-  min-width:262px;background:var(--card);border:1px solid var(--rule-2);
-  border-radius:14px;overflow:hidden;
-  box-shadow:0 20px 44px -20px rgba(0,0,0,.28), 0 2px 8px -4px rgba(0,0,0,.10);
-}
-.acct-head{padding:15px 16px 13px;border-bottom:1px solid var(--rule)}
-.acct-name{
-  font-family:Archivo,sans-serif;font-weight:700;font-size:16px;
-  color:var(--ink);margin:0 0 2px;
-}
-.acct-mail{
-  font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-3);
-  margin:0;word-break:break-all;
-}
-.acct-menu a,.acct-menu button{
-  display:block;width:100%;text-align:left;box-sizing:border-box;
-  padding:13px 16px;font:inherit;font-size:15px;color:var(--ink);
-  text-decoration:none;background:none;border:none;cursor:pointer;min-height:46px;
-}
-.acct-menu a:hover,.acct-menu button:hover{background:var(--brand-tint);color:var(--brand)}
-.acct-menu a:focus-visible,.acct-menu button:focus-visible{
-  outline:2px solid var(--brand);outline-offset:-2px;
-}
-.acct-menu .danger{
-  color:var(--brand);font-weight:600;border-top:1px solid var(--rule);
-}
-.link-btn.primary:hover{background:var(--brand-2);color:#fff}
-a.link-btn{display:inline-flex;align-items:center;text-decoration:none}
-
-
-header{
-  position:relative;padding:34px 0 22px;border-bottom:1px solid var(--rule);
-  overflow:hidden;
-}
-/* A quiet indigo wash behind the title. Decoration is kept to the header so it
-   cannot compete with the status colours further down the page. */
-header::before{
-  content:"";position:absolute;inset:-70% -35% auto -35%;height:240%;
-  background:
-    radial-gradient(46% 42% at 12% 4%,  var(--brand-tint) 0%, transparent 72%),
-    radial-gradient(38% 34% at 88% 0%,  var(--go-bg)      0%, transparent 70%);
-  z-index:0;pointer-events:none;opacity:.9;
-}
-header > *{position:relative;z-index:1}
-.eyebrow{
-  display:inline-flex;align-items:center;gap:7px;margin:0 0 10px;
-  font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;
-  text-transform:uppercase;letter-spacing:.09em;color:var(--brand);
-  background:var(--brand-tint);padding:5px 10px;border-radius:999px;
-}
-.eyebrow .pulse{
-  width:7px;height:7px;border-radius:50%;background:var(--go);flex:0 0 7px;
-  animation:pulse 2.4s ease-in-out infinite;
-}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
-/* Availability at a glance. This replaces a button that scrolled to a map
-   already on screen: the same space now answers the question the reader came
-   with, before they look at anything. */
-.glance{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 0}
-.stat{
-  display:flex;align-items:center;gap:9px;padding:10px 14px;
-  border-radius:10px;background:var(--card);border:1px solid var(--rule-2);
-}
-.stat .n{
-  font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:19px;
-  line-height:1;font-variant-numeric:tabular-nums;
-}
-.stat .l{font-size:13px;color:var(--ink-2);line-height:1.25}
-.stat.available{border-color:#bde3d4;background:var(--go-bg)}
-.stat.available .n{color:var(--go)}
-.stat.limited{border-color:#f0d8a8;background:var(--wait-bg)}
-.stat.limited .n{color:var(--wait)}
-.stat.full{border-color:#f0c4c2;background:var(--stop-bg)}
-.stat.full .n{color:var(--stop)}
-.stat.unreported .n{color:var(--ink-3)}
-h1{
-  font-family:Archivo,system-ui,sans-serif;
-  font-weight:700; font-size:clamp(26px,5.2vw,38px);
-  letter-spacing:-.02em; line-height:1.05; margin:0 0 6px;
-}
-.sub{color:var(--ink-2);font-size:15px;margin:0;max-width:52ch}
-.stamp{
-  display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;
-  margin-top:14px;font-family:"IBM Plex Mono",monospace;
-  font-size:12px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;
-}
-
-.notice{
-  margin:18px 0 0;padding:12px 14px;border:1px solid var(--rule-2);
-  border-radius:8px;background:var(--card);font-size:14px;color:var(--ink-2);
-}
-.notice b{color:var(--ink);font-weight:600}
-
-#map{
-  height:340px;margin:20px 0 0;border-radius:10px;
-  border:1px solid var(--rule);background:var(--card);overflow:hidden;
-}
-@media(max-width:600px){#map{height:260px}}
-
-/* Location bar. Distance is the question people actually arrive with, so it
-   sits above the status filters rather than beside them. */
-.locbar{
-  margin:22px 0 0;padding:14px;border:1px solid var(--rule-2);
-  border-radius:12px;background:var(--card);
-}
-.locbar-row{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch}
-.locbar input{
-  flex:1 1 190px;min-width:0;font:inherit;font-size:16px;padding:11px 13px;
-  border-radius:10px;border:1.5px solid var(--rule-2);background:var(--paper);
-  color:var(--ink);min-height:46px;
-}
-.locbar input:focus{
-  outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-tint);
-}
-.locbar button{
-  appearance:none;cursor:pointer;font:inherit;font-size:14px;font-weight:600;
-  padding:11px 15px;border-radius:10px;min-height:46px;white-space:nowrap;
-  display:inline-flex;align-items:center;gap:7px;
-}
-.btn-here{background:var(--brand);color:#fff;border:1.5px solid var(--brand)}
-.btn-here:hover{background:var(--brand-2);border-color:var(--brand-2)}
-.btn-find{background:var(--card);color:var(--ink-2);border:1.5px solid var(--rule-2)}
-.btn-find:hover{border-color:var(--brand);color:var(--brand)}
-.locbar button:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
-.locbar button:disabled{opacity:.6;cursor:default}
-.loc-state{
-  display:flex;align-items:center;gap:9px;flex-wrap:wrap;
-  margin:11px 0 0;font-size:13px;color:var(--ink-2);
-}
-.loc-state .pin{color:var(--brand);flex:0 0 auto;display:flex}
-.loc-clear{
-  appearance:none;background:none;border:none;padding:0;font:inherit;font-size:13px;
-  font-weight:600;color:var(--brand);cursor:pointer;text-decoration:underline;
-  min-height:32px;
-}
-.loc-err{color:var(--stop);font-size:13px;margin:10px 0 0;font-weight:500}
-.loc-note{font-size:12px;color:var(--ink-3);margin:9px 0 0;line-height:1.5}
-.dist{
-  font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;
-  color:var(--brand);background:var(--brand-tint);padding:3px 8px;
-  border-radius:5px;white-space:nowrap;
-}
-
-.controls{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 4px}
-.chip{
-  appearance:none;cursor:pointer;font:inherit;font-size:14px;font-weight:500;
-  padding:8px 14px;border-radius:999px;border:1px solid var(--rule-2);
-  background:var(--card);color:var(--ink-2);transition:border-color .12s,color .12s;
-}
-.chip:hover{border-color:var(--ink-3)}
-.chip[aria-pressed="true"]{border-color:var(--brand);background:var(--brand-tint);color:var(--brand);font-weight:600}
-.chip:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-
-.count{
-  font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-3);
-  text-transform:uppercase;letter-spacing:.06em;margin:14px 0 10px;
-}
-
-ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
-li.row{
-  background:var(--card);border:1px solid var(--rule);border-radius:10px;
-  overflow:hidden;display:flex;
-}
-.band{width:6px;flex:0 0 6px}
-.band.available{background:var(--go)}
-.band.limited{background:var(--wait)}
-.band.full{background:var(--stop)}
-.band.unreported{background:var(--none)}
-
-.body{flex:1;min-width:0;padding:14px 16px}
-.top{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:baseline;justify-content:space-between}
-.name{
-  font-family:Archivo,system-ui,sans-serif;font-weight:600;
-  font-size:17px;letter-spacing:-.01em;margin:0;
-}
-.tag{
-  font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;
-  text-transform:uppercase;letter-spacing:.07em;padding:3px 8px;border-radius:4px;white-space:nowrap;
-}
-.tag.available{color:var(--go);background:var(--go-bg)}
-.tag.limited{color:var(--wait);background:var(--wait-bg)}
-.tag.full{color:var(--stop);background:var(--stop-bg)}
-.tag.unreported{color:var(--none);background:var(--none-bg)}
-
-.meta{color:var(--ink-3);font-size:13px;margin:2px 0 0}
-.approx{color:var(--wait);font-size:12px;margin:5px 0 0;font-weight:500}
-
-.readout{display:flex;flex-wrap:wrap;gap:18px;margin:12px 0 0}
-.cell .k{
-  font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--ink-3);
-  text-transform:uppercase;letter-spacing:.08em;display:block;
-}
-.cell .v{
-  font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:21px;
-  line-height:1.2;font-variant-numeric:tabular-nums;
-}
-.v.dim{color:var(--ink-3);font-weight:500}
-
-.actions{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0}
-.call{
-  display:inline-flex;align-items:center;gap:7px;text-decoration:none;
-  font-size:14px;font-weight:600;padding:9px 16px;border-radius:8px;
-  background:var(--brand);color:#fff;min-height:40px;
-}
-.call:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-.call[aria-disabled="true"]{background:var(--none-bg);color:var(--ink-3);pointer-events:none}
-.dir{
-  display:inline-flex;align-items:center;text-decoration:none;
-  font-size:14px;font-weight:500;padding:9px 16px;border-radius:8px;
-  border:1px solid var(--rule-2);color:var(--ink-2);min-height:40px;
-}
-.dir:hover{border-color:var(--ink-3)}
-
-.empty{padding:28px 16px;text-align:center;color:var(--ink-3);font-size:15px;
-  border:1px dashed var(--rule-2);border-radius:10px}
-
-/* Participating hospitals, scrolling. Purely informational: the map above
-   already carries every fact a reader needs, so nothing here is load-bearing. */
-.marquee{
-  margin:34px 0 0;padding:16px 0;border-top:1px solid var(--rule);
-  border-bottom:1px solid var(--rule);overflow:hidden;
-  -webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);
-          mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);
-}
-.marquee-label{
-  font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3);
-  text-transform:uppercase;letter-spacing:.08em;margin:0 0 12px;
-}
-.marquee-track{
-  display:flex;gap:10px;width:max-content;
-  animation:slide 46s linear infinite;
-}
-.marquee:hover .marquee-track,
-.marquee:focus-within .marquee-track{animation-play-state:paused}
-@keyframes slide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-.chip-h{
-  display:inline-flex;align-items:center;gap:8px;white-space:nowrap;
-  padding:9px 15px;border:1px solid var(--rule-2);border-radius:999px;
-  background:var(--card);font-size:14px;color:var(--ink-2);
-}
-.chip-h .tick{width:6px;height:6px;border-radius:50%;background:var(--brand);flex:0 0 6px}
-@media (prefers-reduced-motion: reduce){
-  .marquee-track{animation:none;flex-wrap:wrap;width:auto}
-  .marquee{-webkit-mask-image:none;mask-image:none}
-  .eyebrow .pulse{animation:none}
-}
-
-.actions-bar{display:flex;gap:10px;flex-wrap:wrap;margin:32px 0 0}
-.action{
-  flex:1 1 240px;display:flex;flex-direction:column;gap:2px;
-  padding:14px 16px;border:1px solid var(--rule-2);border-radius:10px;
-  background:var(--card);text-decoration:none;min-height:44px;
-  transition:border-color .12s;
-}
-.action:hover{border-color:var(--brand);background:var(--brand-tint)}
-.action:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-.action-title{font-family:Archivo,sans-serif;font-weight:600;font-size:15px;color:var(--brand)}
-.action-sub{font-size:13px;color:var(--ink-3)}
-footer{margin-top:28px;padding-top:18px;border-top:1px solid var(--rule);
-  font-size:13px;color:var(--ink-3)}
-.credit{font-size:12px}
-footer a{color:var(--ink-2)}
-.maplibregl-popup-content{
-  font-family:"IBM Plex Sans",sans-serif;font-size:13px;
-  border-radius:8px;padding:10px 12px;
-}
-@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
-</style>
+<link href="./theme.css" rel="stylesheet">
 </head>
 <body>
-<div class="wrap">
 
-<div class="topbar" id="topbar">
-  <a class="link-btn primary" id="btn-signin-link" href="./login.html" hidden>Staff sign in</a>
+<a class="skip" href="#map-section">Skip to the hospital map</a>
 
-  <div class="acct" id="acct" hidden>
-    <button class="acct-btn" id="acct-btn" aria-expanded="false" aria-haspopup="true" aria-controls="acct-menu">
-      <span class="avatar" id="who-initial" aria-hidden="true"></span>
-      <span id="who-name">Account</span>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
-    </button>
-
-    <div class="acct-menu" id="acct-menu" role="menu" hidden>
-      <div class="acct-head">
-        <p class="acct-name" id="menu-name"></p>
-        <p class="acct-mail" id="menu-mail"></p>
-      </div>
-      <a role="menuitem" href="./staff.html">Report bed counts</a>
-      <a role="menuitem" href="./suggest.html">Suggest a hospital</a>
-      <a role="menuitem" href="./register.html">Request access to another hospital</a>
-      <button role="menuitem" class="danger" id="btn-signout">Sign out</button>
-    </div>
+<!-- ============================================================= utility == -->
+<div class="utility">
+  <div class="shell">
+    <a href="https://github.com/desmond-lartey/ghana-hospital-beds" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a12 12 0 0 0-3.79 23.4c.6.11.82-.26.82-.58v-2.2c-3.34.72-4.04-1.42-4.04-1.42-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.21.08 1.84 1.24 1.84 1.24 1.07 1.84 2.81 1.31 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.11-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.65 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .5z"/></svg>
+      Open source
+    </a>
+    <a class="emergency" href="tel:112">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
+      Emergency: call 112
+    </a>
   </div>
 </div>
 
-<header>
-  <p class="eyebrow"><span class="pulse" aria-hidden="true"></span>Live availability &middot; Greater Accra</p>
-  <h1>Find a hospital bed<br>before you travel.</h1>
-  <p class="sub">Emergency, ICU and general ward availability, reported by the hospitals themselves. Always call ahead to confirm.</p>
-  <div class="glance" id="glance" aria-live="polite"></div>
-  <div class="stamp">
-    <span id="stamp-updated">Loading data</span>
-    <span id="stamp-count"></span>
+<!-- ============================================================== header == -->
+<header class="site-head">
+  <div class="shell">
+
+    <a class="brand" href="./index.html" aria-label="Accra Hospital Beds, home">
+      <svg class="brand-mark" viewBox="0 0 36 34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <g transform="skewX(-16)">
+          <rect x="10" y="4" width="6" height="26" rx="1.5" fill="#1e3a8f"/>
+          <rect x="19" y="4" width="6" height="26" rx="1.5" fill="#2ea8e6"/>
+          <rect x="28" y="4" width="6" height="26" rx="1.5" fill="#e0201b"/>
+        </g>
+      </svg>
+      <span class="brand-text">
+        <b>ACCRA</b>
+        <span>HOSPITAL BEDS</span>
+      </span>
+    </a>
+
+    <button class="burger" id="burger" aria-expanded="false" aria-controls="nav" aria-label="Menu">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+
+    <nav class="nav" id="nav" aria-label="Main">
+      <div class="drop" data-open="false">
+        <button class="nav-top" type="button" aria-expanded="false" aria-controls="drop-about">
+          About this map
+          <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div class="drop-menu" id="drop-about" hidden>
+          <a href="#about">How this works</a>
+          <a href="#about">Where the data comes from</a>
+          <a href="https://github.com/desmond-lartey/ghana-hospital-beds" rel="noopener">Read the source code</a>
+        </div>
+      </div>
+
+      <a href="#map-section">Live map</a>
+      <a href="#hospital-list">Hospitals</a>
+
+      <div class="drop" data-open="false">
+        <button class="nav-top" type="button" aria-expanded="false" aria-controls="drop-staff">
+          For staff
+          <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div class="drop-menu" id="drop-staff" hidden>
+          <a href="./staff.html">Report bed counts</a>
+          <a href="./register.html">Request staff access</a>
+          <a href="./login.html">Sign in</a>
+        </div>
+      </div>
+
+      <a href="./suggest.html">Suggest a hospital</a>
+    </nav>
+
+    <div class="head-tools">
+      <div class="topbar" id="topbar">
+        <a class="btn btn-outline-navy btn-sm" id="btn-signin-link" href="./login.html" hidden>Staff sign in</a>
+
+        <div class="acct" id="acct" hidden>
+          <button class="acct-btn" id="acct-btn" aria-expanded="false" aria-haspopup="true" aria-controls="acct-menu">
+            <span class="avatar" id="who-initial" aria-hidden="true"></span>
+            <span id="who-name">Account</span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+
+          <div class="acct-menu" id="acct-menu" role="menu" hidden>
+            <div class="acct-head">
+              <p class="acct-name" id="menu-name"></p>
+              <p class="acct-mail" id="menu-mail"></p>
+            </div>
+            <a role="menuitem" href="./staff.html">Report bed counts</a>
+            <a role="menuitem" href="./suggest.html">Suggest a hospital</a>
+            <a role="menuitem" href="./register.html">Request access to another hospital</a>
+            <button role="menuitem" class="danger" id="btn-signout">Sign out</button>
+          </div>
+        </div>
+      </div>
+
+      <a class="quad" href="#do" aria-label="Jump to what you can do here">
+        <span></span><span></span><span></span><span></span>
+      </a>
+
+      <a class="phone-pill" href="tel:112">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
+        <span>Ambulance 112</span>
+      </a>
+    </div>
+
   </div>
 </header>
 
-<p class="notice" id="notice">
-  <b>Bed counts are not yet live.</b> Hospital names, locations and phone numbers below are from public
-  directories. Bed, ICU and oxygen figures are not public information and appear only once a hospital
-  reports them, so every hospital currently shows as not reported.
-</p>
+<!-- ================================================================ hero == -->
+<section class="hero">
+  <div class="hero-grid" aria-hidden="true"></div>
+  <div class="hero-blob" aria-hidden="true"></div>
+  <div class="shell">
+    <div class="hero-inner">
+      <h1>Find a hospital bed<br>before you travel.</h1>
+      <p class="hero-lede">
+        Emergency, ICU and general ward availability across Greater Accra,
+        reported by the hospitals themselves. Always call ahead to confirm.
+      </p>
+      <div class="hero-cta">
+        <a class="btn btn-red" href="#map-section">See what is open now</a>
+        <a class="btn btn-white" href="#about">How this works</a>
+      </div>
+      <div class="hero-stamp">
+        <span class="live"><span class="pulse" aria-hidden="true"></span>Live &middot; Greater Accra</span>
+        <span id="stamp-updated">Loading data</span>
+        <span id="stamp-count"></span>
+      </div>
+    </div>
+  </div>
+</section>
 
-<div id="map" tabindex="-1" role="region" aria-label="Map of Accra hospitals"></div>
+<!-- ====================================================== quick actions == -->
+<section class="quick" id="do" aria-label="What you can do here">
+  <div class="shell">
+    <div class="quick-grid">
 
-<section class="locbar" aria-label="Find hospitals near a place">
-  <div class="locbar-row">
-    <button class="btn-here" id="btn-here" type="button">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/></svg>
-      Use my location
-    </button>
-    <input id="loc-input" type="text" placeholder="Or type an area: Osu, Madina, Tema"
-           autocomplete="off" enterkeyhint="search" aria-label="Area or place name">
-    <button class="btn-find" id="btn-find" type="button">Search</button>
+      <a class="quick-card" href="#map-section">
+        <h3>Check bed<br>availability</h3>
+        <svg class="qi" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M8 50V20M8 36h48v14M8 50h48"/>
+          <path d="M56 36a10 10 0 0 0-10-10H30v10"/>
+          <circle cx="19" cy="30" r="5"/>
+        </svg>
+      </a>
+
+      <a class="quick-card" href="./staff.html">
+        <h3>Report your<br>ward's beds</h3>
+        <svg class="qi" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M20 12h-4a4 4 0 0 0-4 4v32a4 4 0 0 0 4 4h32a4 4 0 0 0 4-4V16a4 4 0 0 0-4-4h-4"/>
+          <rect x="22" y="8" width="20" height="10" rx="3"/>
+          <path d="M22 30h20M22 40h12"/>
+        </svg>
+      </a>
+
+      <a class="quick-card" href="./register.html">
+        <h3>Request<br>staff access</h3>
+        <svg class="qi" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="28" cy="24" r="10"/>
+          <path d="M10 52a18 18 0 0 1 34-8"/>
+          <path d="M44 46l5 5 9-11"/>
+        </svg>
+      </a>
+
+      <a class="quick-card accent" href="./login.html">
+        <h3>Staff<br>sign in</h3>
+        <svg class="qi" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="12" y="28" width="40" height="26" rx="5"/>
+          <path d="M22 28v-8a10 10 0 0 1 20 0v8"/>
+          <circle cx="32" cy="41" r="3.5"/>
+        </svg>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- =============================================================== about == -->
+<section class="section" id="about">
+  <div class="shell">
+    <div class="intro-grid">
+
+      <div class="intro-copy">
+        <p class="eyebrow">AT ACCRA HOSPITAL BEDS</p>
+        <p>
+          A family looking for care should not have to guess. This map shows which
+          hospitals in Greater Accra have beds free right now, so the decision is
+          made before anyone gets in a car.
+        </p>
+        <p>
+          Hospital names, addresses and phone numbers come from public directories.
+          Bed, ICU and oxygen figures are not public information: they appear here
+          only when a member of staff at that hospital reports them.
+        </p>
+      </div>
+
+      <div class="intro-panel">
+        <h3>Availability right now</h3>
+        <p class="stamp-line">Counted across every hospital listed on this map.</p>
+        <div class="glance" id="glance" aria-live="polite"></div>
+
+        <p class="notice" id="notice">
+          <b>Bed counts are not yet live.</b> Names, locations and phone numbers below come from
+          public directories. Bed, ICU and oxygen figures appear only once a hospital reports
+          them, so every hospital currently shows as not reported.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================= filter cards == -->
+<section class="section section-tint">
+  <div class="shell">
+    <h2 class="section-title center">What are you looking for?</h2>
+    <p class="section-lede center">
+      Pick one and the map and the list below both narrow to match.
+    </p>
+
+    <div class="pcards">
+
+      <div class="pcard">
+        <div class="pcard-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19V7M3 14h18v5M3 19h18"/><path d="M21 14a5 5 0 0 0-5-5h-6v5"/><circle cx="6.5" cy="11.5" r="2"/></svg>
+        </div>
+        <h3>Beds available now</h3>
+        <div class="pc-rule"></div>
+        <p>
+          Hospitals reporting at least one free bed in emergency, ICU or the general
+          ward. Availability changes through the day, so call the number on the card
+          before you set off.
+        </p>
+        <button class="btn btn-red btn-block pcard-btn" type="button" data-filter="open">Show hospitals</button>
+      </div>
+
+      <div class="pcard">
+        <div class="pcard-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5c3.2 3.6 5.5 6.6 5.5 9.4a5.5 5.5 0 0 1-11 0c0-2.8 2.3-5.8 5.5-9.4z"/><path d="M9.6 13.4h4.8M12 11v4.8"/></svg>
+        </div>
+        <h3>Oxygen on site</h3>
+        <div class="pc-rule"></div>
+        <p>
+          Facilities that have confirmed a working oxygen supply. This matters most
+          for breathing difficulty, where the nearest hospital is not always the
+          right one to drive to.
+        </p>
+        <button class="btn btn-red btn-block pcard-btn" type="button" data-filter="oxygen">Show hospitals</button>
+      </div>
+
+      <div class="pcard">
+        <div class="pcard-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 16V8h10v8M12 11h4l3 3v2M2 16h2M9 16h6M20 16h2"/><circle cx="6.5" cy="17.5" r="1.8"/><circle cx="17.5" cy="17.5" r="1.8"/><path d="M5.5 10h3M7 8.5v3"/></svg>
+        </div>
+        <h3>Ambulance on site</h3>
+        <div class="pc-rule"></div>
+        <p>
+          Hospitals with their own ambulance available for transfers. Useful when a
+          patient may need moving on to a larger facility after an initial
+          assessment.
+        </p>
+        <button class="btn btn-red btn-block pcard-btn" type="button" data-filter="ambulance">Show hospitals</button>
+      </div>
+
+      <div class="pcard">
+        <div class="pcard-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.3-7-11a7 7 0 0 1 14 0c0 5.7-7 11-7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>
+        </div>
+        <h3>Every hospital listed</h3>
+        <div class="pc-rule"></div>
+        <p>
+          The full directory, including facilities that have not reported today.
+          Their contact details are still here, so a phone call is always the next
+          step available to you.
+        </p>
+        <button class="btn btn-red btn-block pcard-btn" type="button" data-filter="all">Show hospitals</button>
+      </div>
+
+    </div>
+
+    <div class="pcards-foot">
+      <a class="btn btn-outline" href="#hospital-list">Go to the full list</a>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================= location search band == -->
+<section class="section" id="map-section">
+  <div class="shell">
+
+    <div class="band">
+      <div class="band-grid">
+        <div>
+          <h2>Find beds near you</h2>
+          <p>Sort every hospital by how far it is from where you are standing.</p>
+        </div>
+        <div>
+          <div class="band-controls">
+            <button class="btn btn-white" id="btn-here" type="button">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/></svg>
+              Use my location
+            </button>
+            <input id="loc-input" type="text" placeholder="Or type an area: Osu, Madina, Tema"
+                   autocomplete="off" enterkeyhint="search" aria-label="Area or place name">
+            <button class="btn btn-red" id="btn-find" type="button">Search</button>
+          </div>
+
+          <div class="loc-state" id="loc-state" hidden>
+            <span class="pin" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+            <span id="loc-label"></span>
+            <button class="loc-clear" id="loc-clear" type="button">Clear</button>
+          </div>
+
+          <p class="loc-err" id="loc-err" hidden></p>
+          <p class="loc-note" id="loc-note" hidden>
+            Distances are straight-line, not driving distance. Traffic can make a nearer
+            hospital take longer, so use Directions for real routing.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div id="map" tabindex="-1" role="region" aria-label="Map of Accra hospitals" style="margin-top:28px"></div>
+
+  </div>
+</section>
+
+<!-- ======================================================= hospital list == -->
+<section class="section section-mist" id="hospital-list" style="padding-top:24px">
+  <div class="shell">
+    <h2 class="section-title" style="font-size:28px;margin-bottom:22px">Hospitals</h2>
+
+    <div class="controls" role="group" aria-label="Filter hospitals">
+      <button class="chip" id="f-all" aria-pressed="true" data-filter="all">All hospitals</button>
+      <button class="chip" id="f-go" aria-pressed="false" data-filter="open">Beds available</button>
+      <button class="chip" id="f-oxy" aria-pressed="false" data-filter="oxygen">Oxygen on site</button>
+      <button class="chip" id="f-amb" aria-pressed="false" data-filter="ambulance">Ambulance on site</button>
+    </div>
+
+    <p class="count" id="result-count"></p>
+    <ul class="list" id="list"></ul>
+  </div>
+</section>
+
+<!-- ============================================================== staff == -->
+<section class="section">
+  <div class="shell">
+    <div class="split">
+
+      <div class="split-media">
+        <h4>Korle Bu Teaching Hospital</h4>
+        <p class="mock-sub">What a report looks like once it is in</p>
+        <div class="mock">
+          <div class="mock-row"><span>Emergency</span><b>4</b></div>
+          <div class="mock-row"><span>ICU</span><b>1</b></div>
+          <div class="mock-row"><span>General ward</span><b>12</b></div>
+          <div class="mock-row"><span>Oxygen</span><b>Yes</b></div>
+          <div class="mock-foot">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+            Published to the map, two minutes ago
+          </div>
+        </div>
+      </div>
+
+      <div class="split-card">
+        <p class="eyebrow">ARE YOU HOSPITAL STAFF?</p>
+        <h2>Four numbers, twice a day.</h2>
+        <p>
+          If you work on a ward in Greater Accra, you can put your hospital on this
+          map. Reporting takes about thirty seconds and reaches families the moment
+          you press submit.
+        </p>
+        <ul class="ticks">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg> Emergency, ICU and general ward counts</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg> Oxygen and ambulance, yes or no</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg> Correct your hospital's phone number and address</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg> Accounts are approved by hand before they can change anything</li>
+        </ul>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <a class="btn btn-outline" href="./register.html">Request staff access</a>
+          <a class="btn btn-outline-navy" href="./login.html">Sign in</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ marquee == -->
+<section class="section section-tint" aria-label="Participating hospitals" style="padding:44px 0">
+  <div class="shell">
+    <h2 class="section-title center" style="font-size:24px;margin-bottom:4px">Hospitals on this map</h2>
+  </div>
+  <div class="marquee">
+    <div class="marquee-track" id="marquee-track"></div>
+  </div>
+</section>
+
+<!-- ============================================================= footer == -->
+<footer class="site-foot" id="contact">
+  <div class="shell">
+    <div class="foot-grid">
+
+      <div class="foot-brand">
+        <div class="brand">
+          <svg class="brand-mark" viewBox="0 0 36 34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <g transform="skewX(-16)">
+              <rect x="10" y="4" width="6" height="26" rx="1.5" fill="#ffffff"/>
+              <rect x="19" y="4" width="6" height="26" rx="1.5" fill="#2ea8e6"/>
+              <rect x="28" y="4" width="6" height="26" rx="1.5" fill="#e0201b"/>
+            </g>
+          </svg>
+          <span class="brand-text"><b>ACCRA</b><span>HOSPITAL BEDS</span></span>
+        </div>
+        <p>
+          An open-source student project mapping hospital bed availability in
+          Greater Accra. Not affiliated with any hospital, bank or government agency.
+        </p>
+        <div class="foot-social">
+          <a href="https://github.com/desmond-lartey/ghana-hospital-beds" rel="noopener" aria-label="Source code on GitHub">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a12 12 0 0 0-3.79 23.4c.6.11.82-.26.82-.58v-2.2c-3.34.72-4.04-1.42-4.04-1.42-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.21.08 1.84 1.24 1.84 1.24 1.07 1.84 2.81 1.31 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.11-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.65 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .5z"/></svg>
+          </a>
+          <a href="./suggest.html" aria-label="Suggest a hospital">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div>
+        <h4>THE MAP</h4>
+        <ul class="foot-links">
+          <li><a href="#map-section">Live map</a></li>
+          <li><a href="#hospital-list">All hospitals</a></li>
+          <li><a href="#do">What you can do here</a></li>
+          <li><a href="#about">Where the data comes from</a></li>
+          <li><a href="./suggest.html">Suggest a hospital</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>FOR STAFF</h4>
+        <ul class="foot-links">
+          <li><a href="./staff.html">Report bed counts</a></li>
+          <li><a href="./register.html">Request staff access</a></li>
+          <li><a href="./login.html">Sign in</a></li>
+          <li><a href="https://github.com/desmond-lartey/ghana-hospital-beds" rel="noopener">Source code</a></li>
+          <li><a href="/.well-known/security.txt">Report a security issue</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>IN AN EMERGENCY</h4>
+        <p class="foot-note" id="disclaimer">
+          This is a school project, not an official emergency service. If someone
+          needs help now, call the Ghana National Ambulance Service.
+        </p>
+        <a class="foot-emergency" href="tel:112">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
+          Call 112
+        </a>
+      </div>
+
+    </div>
   </div>
 
-  <div class="loc-state" id="loc-state" hidden>
-    <span class="pin" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
-    <span id="loc-label"></span>
-    <button class="loc-clear" id="loc-clear" type="button">Clear</button>
+  <div class="foot-bar">
+    <div class="shell">
+      &copy;<span id="year">2026</span> Accra Hospital Beds &middot;
+      Built with MapLibre GL JS, OpenFreeMap and Supabase &middot;
+      Place search by <a href="https://openstreetmap.org/copyright" rel="noopener">OpenStreetMap</a> contributors &middot;
+      No tracking
+    </div>
   </div>
-
-  <p class="loc-err" id="loc-err" hidden></p>
-  <p class="loc-note" id="loc-note" hidden>
-    Distances are straight-line, not driving distance. Traffic can make a nearer
-    hospital take longer, so use Directions for real routing.
-  </p>
-</section>
-
-<div class="controls" role="group" aria-label="Filter hospitals">
-  <button class="chip" id="f-all" aria-pressed="true" data-filter="all">All hospitals</button>
-  <button class="chip" id="f-go" aria-pressed="false" data-filter="open">Beds available</button>
-  <button class="chip" id="f-oxy" aria-pressed="false" data-filter="oxygen">Oxygen on site</button>
-  <button class="chip" id="f-amb" aria-pressed="false" data-filter="ambulance">Ambulance on site</button>
-</div>
-
-<p class="count" id="result-count"></p>
-<ul class="list" id="list"></ul>
-
-<section class="marquee" aria-label="Participating hospitals">
-  <p class="marquee-label">Hospitals listed</p>
-  <div class="marquee-track" id="marquee-track"></div>
-</section>
-
-<section class="actions-bar" aria-label="Contribute to this map">
-  <a class="action" href="./staff.html">
-    <span class="action-title">Report bed counts</span>
-    <span class="action-sub">For approved hospital staff</span>
-  </a>
-  <a class="action" href="./register.html">
-    <span class="action-title">Request staff access</span>
-    <span class="action-sub">Hospital staff, reviewed before approval</span>
-  </a>
-  <a class="action" href="./suggest.html">
-    <span class="action-title">Suggest a hospital</span>
-    <span class="action-sub">Missing a facility? Anyone can submit one</span>
-  </a>
-</section>
-
-<footer>
-  <p id="disclaimer">
-    This is a school project and is not an official emergency service. In an emergency, call the
-    Ghana National Ambulance Service on 112.
-  </p>
-  <p class="credit">
-    Built with MapLibre GL JS, OpenFreeMap and Supabase. Place search by
-    <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors.
-    Open source, no tracking.
-  </p>
 </footer>
-
-</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="./config.js"></script>
+<script src="./ui.js"></script>
 <script>
 const STATUS_LABEL = {
   available: "Beds available",
@@ -482,7 +500,7 @@ const STATUS_LABEL = {
   unreported: "Not reported"
 };
 const STATUS_PIN = {
-  available: "#1d7a5f", limited: "#b06a06", full: "#b3322f", unreported: "#6e7780"
+  available: "#0e7a54", limited: "#a86608", full: "#b3231d", unreported: "#8a97ad"
 };
 
 let FEATURES = [];
@@ -572,7 +590,7 @@ function render(){
 
   if (!rows.length){
     list.innerHTML = '<li class="empty">No hospitals match this filter right now. ' +
-                     'Try “All hospitals” to see everything on the map.</li>';
+                     'Choose \u201cAll hospitals\u201d to see everything on the map.</li>';
     return;
   }
 
@@ -588,11 +606,11 @@ function render(){
       : '<a class="call" aria-disabled="true" href="#">No phone number on file</a>';
 
     return '<li class="row">' +
-      '<div class="band ' + st + '" aria-hidden="true"></div>' +
+      '<div class="band-strip ' + st + '" aria-hidden="true"></div>' +
       '<div class="body">' +
         '<div class="top">' +
-          '<h2 class="name">' + esc(p.hospital_name) + '</h2>' +
-          '<span style="display:inline-flex;align-items:center;gap:7px">' +
+          '<h3 class="name">' + esc(p.hospital_name) + '</h3>' +
+          '<span style="display:inline-flex;align-items:center;gap:8px">' +
             (ORIGIN && f._km !== undefined
               ? '<span class="dist">' + formatDistance(f._km) + "</span>" : "") +
             '<span class="tag ' + st + '">' + esc(STATUS_LABEL[st]) + "</span>" +
@@ -773,6 +791,8 @@ document.getElementById("loc-clear").addEventListener("click", clearOrigin);
 document.getElementById("loc-input").addEventListener("keydown",
   ev => { if (ev.key === "Enter") findPlace(); });
 
+/* ----------------------------------------------------------------- filter -- */
+
 function setFilter(next){
   filter = next;
   document.querySelectorAll(".chip").forEach(c =>
@@ -783,6 +803,15 @@ function setFilter(next){
 
 document.querySelectorAll(".chip").forEach(c =>
   c.addEventListener("click", () => setFilter(c.dataset.filter)));
+
+// The four cards higher up the page set the same filter and then take the
+// reader to the list, so a card and a chip are two doors into one control
+// rather than two competing ones.
+document.querySelectorAll(".pcard-btn").forEach(b =>
+  b.addEventListener("click", () => {
+    setFilter(b.dataset.filter);
+    document.getElementById("hospital-list").scrollIntoView({ block: "start" });
+  }));
 
 function initMap(){
   try {
@@ -798,7 +827,7 @@ function initMap(){
     map.on("error", () => {});
   } catch (err) {
     document.getElementById("map").innerHTML =
-      '<p style="padding:20px;color:var(--ink-3);font-size:14px">' +
+      '<p style="padding:24px;color:var(--ink-3);font-size:15px">' +
       'The map could not load. The hospital list below still works.</p>';
   }
 }
@@ -945,7 +974,7 @@ function renderMarquee(){
 
   // The duplicate is hidden from assistive technology so names are not read twice.
   track.innerHTML = run +
-    '<span aria-hidden="true" style="display:flex;gap:10px">' + run + "</span>";
+    '<span aria-hidden="true" style="display:flex;gap:12px">' + run + "</span>";
 }
 
 /* ---------------------------------------------------------------- account -- */

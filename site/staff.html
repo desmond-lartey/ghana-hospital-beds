@@ -3,248 +3,251 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Report bed counts</title>
+<title>Report bed counts — Accra Hospital Beds</title>
 <link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="./favicon.svg">
+<meta name="description" content="Hospital staff report emergency, ICU and general ward bed counts to the Accra Hospital Beds map.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-:root{
-  /* Crimson brand. The "full" status below is a deeper maroon so the two read
-     differently, and every status also carries a text label, so colour is never
-     the only thing telling a reader what they are looking at. */
-  --brand:#d42a3f;
-  --brand-2:#b21e31;
-  --brand-deep:#7c1120;
-  --brand-tint:#fdeced;
-  --brand-glow:rgba(212,42,63,.28);
-
-  --ink:#1b1215;--ink-2:#5a4a4f;--ink-3:#8d7c81;
-  --paper:#fffaf8;--card:#fff;--rule:#f0e3e1;--rule-2:#e0cdcb;
-
-  --go:#0e7a54;--go-bg:#e2f4ec;--go-line:#b6e0cf;
-  --wait:#b8730a;--wait-bg:#fdf0dc;--wait-line:#f2d9a8;
-  --stop:#8e1c2c;--stop-bg:#fae9eb;--stop-line:#eec4ca;
-  --none:#8d7c81;--none-bg:#f6efee;
-}
-@media (prefers-color-scheme: dark){
-  :root{
-    --brand:#8f9fe0;--brand-2:#a9b6ea;--brand-tint:#1b2140;
-    --ink:#eceef3;--ink-2:#a6adbe;--ink-3:#7b8296;
-    --paper:#0f1116;--card:#171a21;--rule:#282d38;--rule-2:#39404e;
-    --go:#5cc79f;--go-bg:#12312a;--wait:#e0a038;--wait-bg:#39290f;
-    --stop:#f0736f;--stop-bg:#3a1a19;--none:#8b949d;--none-bg:#20242d;
-  }
-}
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{background:var(--paper);color:var(--ink);
-  font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:16px;line-height:1.5;
-  -webkit-font-smoothing:antialiased}
-.wrap{max-width:560px;margin:0 auto;padding:0 16px 64px}
-header{padding:28px 0 18px;border-bottom:1px solid var(--rule)}
-h1{font-family:Archivo,sans-serif;font-weight:700;font-size:clamp(24px,5vw,32px);
-  letter-spacing:-.02em;line-height:1.1;margin:0 0 6px}
-.sub{color:var(--ink-2);font-size:15px;margin:0}
-section{margin:24px 0 0}
-h2{font-family:Archivo,sans-serif;font-weight:600;font-size:17px;margin:0 0 12px;
-  letter-spacing:-.01em}
-label{display:block;font-size:13px;font-weight:500;color:var(--ink-2);margin:0 0 5px}
-input,select{width:100%;font:inherit;font-size:16px;padding:11px 12px;border-radius:8px;
-  border:1px solid var(--rule-2);background:var(--card);color:var(--ink);min-height:44px}
-input:focus,select:focus{outline:2px solid var(--ink);outline-offset:1px;border-color:var(--ink)}
-input[type=number]{font-family:"IBM Plex Mono",monospace;font-weight:600;
-  font-variant-numeric:tabular-nums}
-.field{margin:0 0 14px}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-@media(max-width:460px){.grid{grid-template-columns:1fr}}
-.checks{display:flex;flex-direction:column;gap:10px;margin:4px 0 0}
-.check{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--ink);cursor:pointer}
-.check input{width:20px;height:20px;min-height:20px;flex:0 0 20px;accent-color:var(--ink)}
-button{appearance:none;font:inherit;font-size:15px;font-weight:600;cursor:pointer;
-  padding:13px 20px;border-radius:8px;border:none;
-  background:var(--brand);color:#fff;width:100%;min-height:48px}
-button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-button.ghost{background:transparent;color:var(--ink-2);border:1px solid var(--rule-2);
-  width:auto;padding:9px 16px;min-height:40px;font-weight:500;font-size:14px}
-.err{color:var(--stop);font-size:13px;margin:6px 0 0;font-weight:500}
-.msg{padding:12px 14px;border-radius:8px;font-size:14px;margin:14px 0 0}
-.msg.ok{background:var(--go-bg);color:var(--go)}
-.msg.bad{background:var(--stop-bg);color:var(--stop)}
-.msg.info{background:var(--none-bg);color:var(--ink-2)}
-.preview{display:flex;align-items:center;gap:12px;margin:16px 0 0;padding:12px 14px;
-  border:1px solid var(--rule);border-radius:8px;background:var(--card)}
-.dot{width:14px;height:14px;border-radius:50%;flex:0 0 14px}
-.preview .txt{font-family:"IBM Plex Mono",monospace;font-size:12px;
-  text-transform:uppercase;letter-spacing:.07em;font-weight:600}
-.hint{font-size:13px;color:var(--ink-3);margin:8px 0 0}
-details.panel{
-  margin:26px 0 0;border:1px solid var(--rule);border-radius:10px;
-  background:var(--card);overflow:hidden;
-}
-details.panel > summary{
-  cursor:pointer;list-style:none;padding:14px 16px;
-  font-family:Archivo,sans-serif;font-weight:600;font-size:15px;color:var(--ink);
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
-  min-height:44px;box-sizing:border-box;
-}
-details.panel > summary::-webkit-details-marker{display:none}
-details.panel > summary::after{
-  content:"+";font-family:"IBM Plex Mono",monospace;font-size:18px;
-  color:var(--ink-3);font-weight:400;
-}
-details.panel[open] > summary::after{content:"\2013"}
-details.panel > summary:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
-.panel-body{padding:2px 16px 18px;border-top:1px solid var(--rule)}
-.panel-note{font-size:13px;color:var(--ink-3);margin:12px 0 14px;line-height:1.5}
-.locked{
-  margin:14px 0 0;padding:11px 13px;border-radius:8px;background:var(--none-bg);
-  font-size:13px;color:var(--ink-2);line-height:1.55;
-}
-.who{font-size:13px;color:var(--ink-3);margin:0 0 14px}
-footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--rule);
-  font-size:13px;color:var(--ink-3)}
-footer a{color:var(--ink-2)}
-[hidden]{display:none!important}
-@media (prefers-reduced-motion: reduce){*{transition:none!important}}
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="./theme.css" rel="stylesheet">
 </head>
 <body>
-<div class="wrap">
 
-<header>
-  <h1>Report bed counts</h1>
-  <p class="sub">For hospital staff. Takes about thirty seconds, twice a day.</p>
+<a class="skip" href="#report">Skip to the reporting form</a>
+
+<div class="utility">
+  <div class="shell">
+    <a href="https://github.com/desmond-lartey/ghana-hospital-beds" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a12 12 0 0 0-3.79 23.4c.6.11.82-.26.82-.58v-2.2c-3.34.72-4.04-1.42-4.04-1.42-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.21.08 1.84 1.24 1.84 1.24 1.07 1.84 2.81 1.31 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.11-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.65 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .5z"/></svg>
+      Open source
+    </a>
+    <a class="emergency" href="tel:112">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
+      Emergency: call 112
+    </a>
+  </div>
+</div>
+
+<header class="site-head">
+  <div class="shell">
+    <a class="brand" href="./index.html" aria-label="Accra Hospital Beds, home">
+      <svg class="brand-mark" viewBox="0 0 36 34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <g transform="skewX(-16)">
+          <rect x="10" y="4" width="6" height="26" rx="1.5" fill="#1e3a8f"/>
+          <rect x="19" y="4" width="6" height="26" rx="1.5" fill="#2ea8e6"/>
+          <rect x="28" y="4" width="6" height="26" rx="1.5" fill="#e0201b"/>
+        </g>
+      </svg>
+      <span class="brand-text"><b>ACCRA</b><span>HOSPITAL BEDS</span></span>
+    </a>
+
+    <button class="burger" id="burger" aria-expanded="false" aria-controls="nav" aria-label="Menu">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="./index.html">Live map</a>
+      <a href="./index.html#hospital-list">Hospitals</a>
+      <a href="./staff.html" aria-current="page">Report bed counts</a>
+      <a href="./register.html">Request staff access</a>
+      <a href="./suggest.html">Suggest a hospital</a>
+    </nav>
+
+    <div class="head-tools">
+      <a class="phone-pill" href="tel:112">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
+        <span>Ambulance 112</span>
+      </a>
+    </div>
+  </div>
 </header>
 
-<section id="signin">
-  <h2>Sign in required</h2>
-  <p class="sub" style="margin-bottom:16px">
-    Reporting bed counts needs an approved staff account.
-  </p>
-  <p class="err" id="err-signin" hidden></p>
-  <div style="margin-top:6px">
-    <a href="./login.html?next=staff.html"
-       style="display:flex;align-items:center;justify-content:center;
-              text-decoration:none;font-size:15px;font-weight:600;
-              padding:14px 20px;border-radius:10px;background:var(--brand);
-              color:#fff;min-height:50px">Sign in</a>
+<section class="page-head">
+  <div class="hero-blob" aria-hidden="true"></div>
+  <div class="shell">
+    <p class="eyebrow">FOR HOSPITAL STAFF</p>
+    <h1>Report bed counts</h1>
+    <p>Four numbers and two checkboxes. About thirty seconds, twice a day.</p>
   </div>
-  <p class="hint">
-    No account? <a href="./register.html">Request staff access</a>. An administrator
-    confirms your role before you can report.
-  </p>
 </section>
 
-<section id="report" hidden>
-  <h2>Today's counts</h2>
-  <p class="who" id="who"></p>
+<main class="form-wrap">
+  <div class="shell-narrow">
 
-  <div class="field">
-    <label for="hospital">Hospital</label>
-    <select id="hospital"></select>
-  </div>
-
-  <div class="grid">
-    <div class="field">
-      <label for="emergency">Emergency</label>
-      <input id="emergency" type="number" min="0" max="999" step="1" inputmode="numeric">
-    </div>
-    <div class="field">
-      <label for="icu">ICU</label>
-      <input id="icu" type="number" min="0" max="999" step="1" inputmode="numeric">
-    </div>
-    <div class="field">
-      <label for="general">General ward</label>
-      <input id="general" type="number" min="0" max="999" step="1" inputmode="numeric">
-    </div>
-  </div>
-
-  <div class="checks">
-    <label class="check"><input type="checkbox" id="oxygen"> Oxygen available</label>
-    <label class="check"><input type="checkbox" id="ambulance"> Ambulance available</label>
-  </div>
-
-  <div class="field" style="margin-top:16px">
-    <label for="by">Your name</label>
-    <input id="by" type="text" autocomplete="name" placeholder="Who is reporting this">
-  </div>
-
-  <div class="preview" aria-live="polite">
-    <span class="dot" id="dot" style="background:var(--none)"></span>
-    <span class="txt" id="preview-txt">Enter counts to see the status</span>
-  </div>
-
-  <p class="err" id="err-report" hidden></p>
-  <div style="margin-top:16px"><button id="btn-submit">Submit report</button></div>
-  <div style="margin-top:10px"><button class="ghost" id="btn-signout">Sign out</button></div>
-
-  <div class="msg info" id="out" hidden></div>
-
-  <details class="panel" id="details-panel">
-    <summary>Hospital contact details</summary>
-    <div class="panel-body">
-      <p class="panel-note">
-        Correct these when they change. They are not part of the daily report, so
-        there is no need to open this every time.
+    <section class="panel" id="signin">
+      <h2>Sign in required</h2>
+      <p class="panel-lede">Reporting bed counts needs an approved staff account.</p>
+      <p class="err" id="err-signin" hidden></p>
+      <a class="btn btn-red btn-block" href="./login.html?next=staff.html">Sign in</a>
+      <p class="hint" style="text-align:center">
+        No account? <a href="./register.html">Request staff access</a>. An administrator
+        confirms your role before you can report.
       </p>
+    </section>
+
+    <section class="panel" id="report" hidden>
+      <h2>Today's counts</h2>
+      <p class="who" id="who"></p>
 
       <div class="field">
-        <label for="d-phone">Main phone number</label>
-        <input id="d-phone" type="tel" autocomplete="tel" placeholder="+233 ...">
-        <p class="hint">The number families and dispatchers call. Include the country code.</p>
+        <label for="hospital">Hospital</label>
+        <select id="hospital"></select>
       </div>
 
-      <div class="field">
-        <label for="d-address">Street address</label>
-        <input id="d-address" type="text" autocomplete="street-address">
+      <div class="grid-3">
+        <div class="field">
+          <label for="emergency">Emergency</label>
+          <input id="emergency" type="number" min="0" max="999" step="1" inputmode="numeric">
+        </div>
+        <div class="field">
+          <label for="icu">ICU</label>
+          <input id="icu" type="number" min="0" max="999" step="1" inputmode="numeric">
+        </div>
+        <div class="field">
+          <label for="general">General ward</label>
+          <input id="general" type="number" min="0" max="999" step="1" inputmode="numeric">
+        </div>
       </div>
 
-      <div class="field">
-        <label for="d-area">Area or suburb</label>
-        <input id="d-area" type="text" placeholder="Legon, Osu, Tema">
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="oxygen"> Oxygen available</label>
+        <label class="check"><input type="checkbox" id="ambulance"> Ambulance available</label>
       </div>
 
-      <div class="field">
-        <label for="d-type">Facility type</label>
-        <select id="d-type">
-          <option value="">Not stated</option>
-          <option>Teaching</option>
-          <option>Government</option>
-          <option>Private</option>
-          <option>Clinic</option>
-          <option>Polyclinic</option>
-        </select>
+      <div class="field" style="margin-top:20px">
+        <label for="by">Your name</label>
+        <input id="by" type="text" autocomplete="name" placeholder="Who is reporting this">
       </div>
 
-      <div class="field">
-        <label for="d-notes">Notes shown on the map</label>
-        <input id="d-notes" type="text" placeholder="ICU short-staffed at weekends">
+      <div class="preview" aria-live="polite">
+        <span class="dot" id="dot" style="background:var(--none)"></span>
+        <span class="txt" id="preview-txt">Enter counts to see the status</span>
       </div>
 
-      <p class="err" id="err-details" hidden></p>
-      <button id="btn-details">Save details</button>
-      <div class="msg" id="out-details" hidden></div>
+      <p class="err" id="err-report" hidden></p>
+      <button class="btn btn-red btn-block" id="btn-submit" style="margin-top:20px">Submit report</button>
+      <button class="btn btn-outline-navy btn-block" id="btn-signout" style="margin-top:10px">Sign out</button>
 
-      <p class="locked">
-        The hospital name and its position on the map are set by the administrator.
-        A wrong phone number costs a call; a wrong position sends an ambulance to the
-        wrong place, so those changes are checked before they take effect.
-        <a href="./suggest.html">Report a problem with the location</a>.
-      </p>
+      <div class="msg info" id="out" hidden></div>
+
+      <details class="disclose" id="details-panel">
+        <summary>Hospital contact details</summary>
+        <div class="disclose-body">
+          <p class="panel-note">
+            Correct these when they change. They are not part of the daily report, so
+            there is no need to open this every time.
+          </p>
+
+          <div class="field">
+            <label for="d-phone">Main phone number</label>
+            <input id="d-phone" type="tel" autocomplete="tel" placeholder="+233 ...">
+            <p class="hint">The number families and dispatchers call. Include the country code.</p>
+          </div>
+
+          <div class="field">
+            <label for="d-address">Street address</label>
+            <input id="d-address" type="text" autocomplete="street-address">
+          </div>
+
+          <div class="field">
+            <label for="d-area">Area or suburb</label>
+            <input id="d-area" type="text" placeholder="Legon, Osu, Tema">
+          </div>
+
+          <div class="field">
+            <label for="d-type">Facility type</label>
+            <select id="d-type">
+              <option value="">Not stated</option>
+              <option>Teaching</option>
+              <option>Government</option>
+              <option>Private</option>
+              <option>Clinic</option>
+              <option>Polyclinic</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="d-notes">Notes shown on the map</label>
+            <input id="d-notes" type="text" placeholder="ICU short-staffed at weekends">
+          </div>
+
+          <p class="err" id="err-details" hidden></p>
+          <button class="btn btn-navy btn-block" id="btn-details">Save details</button>
+          <div class="msg" id="out-details" hidden></div>
+
+          <p class="locked">
+            The hospital name and its position on the map are set by the administrator.
+            A wrong phone number costs a call; a wrong position sends an ambulance to the
+            wrong place, so those changes are checked before they take effect.
+            <a href="./suggest.html">Report a problem with the location</a>.
+          </p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+</main>
+
+<footer class="site-foot">
+  <div class="shell">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <div class="brand">
+          <svg class="brand-mark" viewBox="0 0 36 34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <g transform="skewX(-16)">
+              <rect x="10" y="4" width="6" height="26" rx="1.5" fill="#ffffff"/>
+              <rect x="19" y="4" width="6" height="26" rx="1.5" fill="#2ea8e6"/>
+              <rect x="28" y="4" width="6" height="26" rx="1.5" fill="#e0201b"/>
+            </g>
+          </svg>
+          <span class="brand-text"><b>ACCRA</b><span>HOSPITAL BEDS</span></span>
+        </div>
+        <p>
+          An open-source student project mapping hospital bed availability in
+          Greater Accra. Not affiliated with any hospital, bank or government agency.
+        </p>
+      </div>
+
+      <div>
+        <h4>THE MAP</h4>
+        <ul class="foot-links">
+          <li><a href="./index.html">Live map</a></li>
+          <li><a href="./index.html#hospital-list">All hospitals</a></li>
+          <li><a href="./suggest.html">Suggest a hospital</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>FOR STAFF</h4>
+        <ul class="foot-links">
+          <li><a href="./register.html">Request staff access</a></li>
+          <li><a href="./login.html">Sign in</a></li>
+          <li><a href="https://github.com/desmond-lartey/ghana-hospital-beds" rel="noopener">Source code</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>IN AN EMERGENCY</h4>
+        <p class="foot-note">
+          This is a school project, not an official emergency service. If someone
+          needs help now, call the Ghana National Ambulance Service.
+        </p>
+        <a class="foot-emergency" href="tel:112">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
+          Call 112
+        </a>
+      </div>
     </div>
-  </details>
-</section>
-
-<footer>
-  <p><a href="./index.html">Back to the public map</a></p>
+  </div>
+  <div class="foot-bar">
+    <div class="shell">&copy;<span id="year">2026</span> Accra Hospital Beds &middot; No tracking</div>
+  </div>
 </footer>
-
-</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="./config.js"></script>
+<script src="./ui.js"></script>
 <script>
 // These thresholds mirror the generated `status` column in the database, which
 // is the authority. They exist here only to preview the colour before

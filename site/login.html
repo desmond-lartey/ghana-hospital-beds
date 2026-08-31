@@ -3,278 +3,209 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Sign in</title>
+<title>Sign in — Accra Hospital Beds</title>
 <link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="./favicon.svg">
+<meta name="description" content="Sign in to report your ward's bed availability on the Accra Hospital Beds map.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-:root{
-  --brand:#d42a3f;--brand-2:#b21e31;--brand-deep:#7c1120;
-  --brand-tint:#fdeced;--brand-glow:rgba(212,42,63,.28);
-  --ink:#1b1215;--ink-2:#5a4a4f;--ink-3:#8d7c81;
-  --paper:#fffaf8;--card:#fff;--rule:#f0e3e1;--rule-2:#e0cdcb;
-  --go:#0e7a54;--stop:#8e1c2c;--stop-bg:#fae9eb;
-}
-@media (prefers-color-scheme: dark){
-  :root{
-    --brand:#ff6274;--brand-2:#ff8391;--brand-deep:#d42a3f;
-    --brand-tint:#3a1219;
-    --ink:#f7ecec;--ink-2:#c2adb1;--ink-3:#948286;
-    --paper:#150e10;--card:#1f1518;--rule:#332427;--rule-2:#463236;
-    --go:#4fd0a0;--stop:#ff7b8b;--stop-bg:#3d171d;
-  }
-}
-*{box-sizing:border-box}
-html,body{margin:0;padding:0;min-height:100%}
-body{
-  background:var(--paper);color:var(--ink);
-  font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:16px;line-height:1.5;
-  -webkit-font-smoothing:antialiased;
-  min-height:100dvh;display:flex;flex-direction:column;
-}
-
-/* The crimson field carries the brand. It is deliberately the only large area
-   of colour: everything below it is white, so the form itself stays calm. */
-.hero{
-  position:relative;overflow:hidden;
-  background:
-    radial-gradient(120% 90% at 85% -10%, var(--brand-2) 0%, transparent 60%),
-    linear-gradient(160deg, var(--brand) 0%, var(--brand-deep) 100%);
-  color:#fff;padding:34px 22px 74px;
-}
-.hero::after{
-  content:"";position:absolute;left:-10%;right:-10%;bottom:-1px;height:44px;
-  background:var(--paper);border-radius:50% 50% 0 0;
-}
-.hero-inner{position:relative;z-index:1;max-width:460px;margin:0 auto}
-.back{
-  display:inline-flex;align-items:center;gap:7px;color:rgba(255,255,255,.9);
-  text-decoration:none;font-size:14px;font-weight:500;min-height:40px;
-}
-.back:hover{color:#fff}
-.mark{
-  display:flex;align-items:center;gap:11px;margin:14px 0 0;
-}
-.mark svg{width:34px;height:34px;flex:0 0 34px}
-.mark span{
-  font-family:Archivo,sans-serif;font-weight:700;font-size:17px;letter-spacing:-.01em;
-}
-.hero h1{
-  font-family:Archivo,sans-serif;font-weight:800;font-size:clamp(26px,7vw,34px);
-  letter-spacing:-.025em;line-height:1.08;margin:20px 0 8px;
-}
-.hero p{margin:0;font-size:15px;color:rgba(255,255,255,.86);max-width:34ch}
-
-/* The card lifts over the curve, the way a sheet sits above a header. */
-.sheet{
-  flex:1;margin:-52px auto 0;padding:0 18px 40px;max-width:460px;width:100%;
-  position:relative;z-index:2;
-}
-.card{
-  background:var(--card);border-radius:18px;padding:26px 22px 24px;
-  box-shadow:0 18px 44px -22px var(--brand-glow), 0 2px 10px -4px rgba(0,0,0,.10);
-  border:1px solid var(--rule);
-}
-.card h2{
-  font-family:Archivo,sans-serif;font-weight:700;font-size:21px;
-  letter-spacing:-.015em;margin:0 0 5px;
-}
-.card .lede{font-size:14px;color:var(--ink-2);margin:0 0 22px}
-
-.field{margin:0 0 16px}
-label{display:block;font-size:13px;font-weight:600;color:var(--ink-2);margin:0 0 6px}
-.control{position:relative;display:flex;align-items:center}
-.control .ico{
-  position:absolute;left:13px;width:18px;height:18px;color:var(--ink-3);
-  pointer-events:none;
-}
-input{
-  width:100%;font:inherit;font-size:16px;padding:13px 14px 13px 40px;
-  border-radius:11px;border:1.5px solid var(--rule-2);background:var(--paper);
-  color:var(--ink);min-height:50px;transition:border-color .12s,box-shadow .12s;
-}
-input:focus{
-  outline:none;border-color:var(--brand);
-  box-shadow:0 0 0 3px var(--brand-tint);
-}
-.reveal{
-  position:absolute;right:6px;appearance:none;border:none;background:none;
-  cursor:pointer;color:var(--ink-3);padding:9px;border-radius:8px;
-  min-width:40px;min-height:40px;display:flex;align-items:center;justify-content:center;
-}
-.reveal:hover{color:var(--brand)}
-.reveal:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
-
-.row-between{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 20px}
-.remember{display:flex;align-items:center;gap:9px;font-size:14px;color:var(--ink-2);cursor:pointer}
-.remember input{
-  width:19px;height:19px;min-height:19px;flex:0 0 19px;padding:0;
-  accent-color:var(--brand);border-radius:5px;
-}
-.linkish{
-  background:none;border:none;padding:0;font:inherit;font-size:14px;font-weight:600;
-  color:var(--brand);cursor:pointer;min-height:40px;
-}
-.linkish:hover{color:var(--brand-2);text-decoration:underline}
-
-.submit{
-  appearance:none;border:none;cursor:pointer;font:inherit;
-  font-size:16px;font-weight:700;letter-spacing:.01em;
-  width:100%;min-height:54px;padding:15px;border-radius:12px;
-  background:linear-gradient(160deg,var(--brand) 0%,var(--brand-2) 100%);
-  color:#fff;box-shadow:0 10px 22px -12px var(--brand-glow);
-  display:flex;align-items:center;justify-content:center;gap:9px;
-  transition:transform .1s, box-shadow .12s;
-}
-.submit:hover{box-shadow:0 14px 26px -12px var(--brand-glow)}
-.submit:active{transform:translateY(1px)}
-.submit:disabled{opacity:.65;cursor:default}
-.submit:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
-
-.msg{padding:12px 14px;border-radius:10px;font-size:14px;margin:16px 0 0;line-height:1.55}
-.msg.bad{background:var(--stop-bg);color:var(--stop)}
-.msg.ok{background:#e2f4ec;color:var(--go)}
-
-.rule{display:flex;align-items:center;gap:12px;margin:24px 0}
-.rule::before,.rule::after{content:"";flex:1;height:1px;background:var(--rule)}
-.rule span{
-  font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3);
-  text-transform:uppercase;letter-spacing:.1em;
-}
-.ghost{
-  display:flex;align-items:center;justify-content:center;
-  text-decoration:none;font-size:15px;font-weight:600;color:var(--brand);
-  border:1.5px solid var(--rule-2);border-radius:12px;padding:14px;min-height:52px;
-  transition:border-color .12s,background .12s;
-}
-.ghost:hover{border-color:var(--brand);background:var(--brand-tint)}
-.ghost:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
-
-.foot{text-align:center;margin:22px 0 0;font-size:13px;color:var(--ink-3);line-height:1.6}
-.provenance{
-  margin:18px 0 0;padding:18px 20px;border:1px solid var(--rule);
-  border-radius:14px;background:var(--card);
-}
-.provenance h3{
-  font-family:Archivo,sans-serif;font-weight:700;font-size:14px;
-  margin:0 0 10px;color:var(--ink);
-}
-.provenance p{
-  margin:0 0 10px;font-size:13px;line-height:1.65;color:var(--ink-2);
-}
-.provenance p:last-child{margin-bottom:0}
-.provenance a{color:var(--brand)}
-.provenance .mini{font-size:12px;color:var(--ink-3);padding-top:8px;border-top:1px solid var(--rule)}
-.foot a{color:var(--ink-2)}
-.tag{
-  display:inline-flex;align-items:center;gap:7px;margin:0 0 4px;
-  font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:600;
-  text-transform:uppercase;letter-spacing:.09em;color:rgba(255,255,255,.92);
-  background:rgba(255,255,255,.16);padding:5px 10px;border-radius:999px;
-}
-[hidden]{display:none!important}
-@media (prefers-reduced-motion: reduce){*{transition:none!important}}
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="./theme.css" rel="stylesheet">
 </head>
 <body>
 
-<div class="hero">
-  <div class="hero-inner">
-    <a class="back" href="./index.html" aria-label="Back to the map">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-      Back to the map
+<a class="skip" href="#form-start">Skip to the sign-in form</a>
+
+<div class="utility">
+  <div class="shell">
+    <a href="https://github.com/desmond-lartey/ghana-hospital-beds" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a12 12 0 0 0-3.79 23.4c.6.11.82-.26.82-.58v-2.2c-3.34.72-4.04-1.42-4.04-1.42-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.21.08 1.84 1.24 1.84 1.24 1.07 1.84 2.81 1.31 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.11-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.65 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .5z"/></svg>
+      Open source
     </a>
-
-    <div class="mark">
-      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M32 2C19.85 2 10 11.85 10 24c0 15.5 19.1 35.6 19.91 36.45a3 3 0 0 0 4.18 0C34.9 59.6 54 39.5 54 24 54 11.85 44.15 2 32 2z" fill="#fff" opacity=".95"/>
-        <circle cx="32" cy="24" r="14" fill="#d42a3f"/>
-        <path d="M28.5 13h7v7h7v7h-7v7h-7v-7h-7v-7h7z" fill="#fff"/>
-      </svg>
-      <span>Accra Hospital Beds</span>
-    </div>
-
-    <p class="tag" style="margin-top:18px">For hospital staff</p>
-    <h1>Welcome back.</h1>
-    <p>Sign in to report your ward's bed availability. It takes about thirty seconds.</p>
+    <a class="emergency" href="tel:112">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
+      Emergency: call 112
+    </a>
   </div>
 </div>
 
-<main class="sheet">
-  <div class="card">
-    <h2>Sign in to your account</h2>
-    <p class="lede">Use the email you registered with.</p>
+<header class="site-head">
+  <div class="shell">
+    <a class="brand" href="./index.html" aria-label="Accra Hospital Beds, home">
+      <svg class="brand-mark" viewBox="0 0 36 34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <g transform="skewX(-16)">
+          <rect x="10" y="4" width="6" height="26" rx="1.5" fill="#1e3a8f"/>
+          <rect x="19" y="4" width="6" height="26" rx="1.5" fill="#2ea8e6"/>
+          <rect x="28" y="4" width="6" height="26" rx="1.5" fill="#e0201b"/>
+        </g>
+      </svg>
+      <span class="brand-text"><b>ACCRA</b><span>HOSPITAL BEDS</span></span>
+    </a>
 
-    <div class="field">
-      <label for="email">Email address</label>
-      <div class="control">
-        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
-        <input id="email" type="email" autocomplete="username" autocapitalize="none" inputmode="email" placeholder="you@hospital.gh">
-      </div>
-    </div>
-
-    <div class="field">
-      <label for="pass">Password</label>
-      <div class="control">
-        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        <input id="pass" type="password" autocomplete="current-password" placeholder="Your password">
-        <button class="reveal" id="btn-reveal" type="button" aria-label="Show password" aria-pressed="false">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
-        </button>
-      </div>
-    </div>
-
-    <div class="row-between">
-      <label class="remember"><input type="checkbox" id="remember" checked> Keep me signed in</label>
-      <button class="linkish" id="btn-forgot" type="button">Forgot password?</button>
-    </div>
-
-    <button class="submit" id="btn-signin">
-      Sign in
-      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    <button class="burger" id="burger" aria-expanded="false" aria-controls="nav" aria-label="Menu">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
     </button>
 
-    <div class="msg" id="out" hidden></div>
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="./index.html">Live map</a>
+      <a href="./index.html#hospital-list">Hospitals</a>
+      <a href="./staff.html">Report bed counts</a>
+      <a href="./register.html">Request staff access</a>
+      <a href="./suggest.html">Suggest a hospital</a>
+    </nav>
 
-    <div class="rule"><span>New here</span></div>
-    <a class="ghost" href="./register.html">Request staff access</a>
-
-    <p class="foot">
-      Access is approved by an administrator before you can report.<br>
-      Not staff? <a href="./index.html">Find a hospital bed</a>.
-    </p>
+    <div class="head-tools">
+      <a class="phone-pill" href="tel:112">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
+        <span>Ambulance 112</span>
+      </a>
+    </div>
   </div>
+</header>
 
-  <section class="provenance">
-    <h3>About this site</h3>
-    <p>
-      Accra Hospital Beds is an open-source student project mapping bed availability
-      at hospitals in Greater Accra. It is not affiliated with any hospital, bank,
-      government agency or commercial service, and it does not impersonate one.
-    </p>
-    <p>
-      This sign-in is only for hospital staff who report their own ward's bed counts.
-      Accounts are created on request and approved by hand. We never ask for payment
-      details, identity documents, or any information beyond an email address and a
-      password you choose.
-    </p>
-    <p>
-      Sign-in is handled by <a href="https://supabase.com" rel="noopener">Supabase</a>.
-      The full source code is public at
-      <a href="https://github.com/desmond-lartey/ghana-hospital-beds" rel="noopener">github.com/desmond-lartey/ghana-hospital-beds</a>,
-      so anyone can read exactly what this page does with what you type.
-    </p>
-    <p class="mini">
-      In a medical emergency in Ghana, call the National Ambulance Service on 112.
-      This site is not an emergency service.
-    </p>
-  </section>
+<section class="page-head">
+  <div class="hero-blob" aria-hidden="true"></div>
+  <div class="shell">
+    <p class="eyebrow">FOR HOSPITAL STAFF</p>
+    <h1>Welcome back.</h1>
+    <p>Sign in to report your ward's bed availability. It takes about thirty seconds.</p>
+  </div>
+</section>
+
+<main class="form-wrap">
+  <div class="shell-narrow" id="form-start">
+
+    <div class="panel">
+      <h2>Sign in to your account</h2>
+      <p class="panel-lede">Use the email you registered with.</p>
+
+      <div class="field">
+        <label for="email">Email address</label>
+        <div class="control">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
+          <input id="email" type="email" autocomplete="username" autocapitalize="none" inputmode="email" placeholder="you@hospital.gh">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="pass">Password</label>
+        <div class="control">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <input id="pass" type="password" autocomplete="current-password" placeholder="Your password">
+          <button class="reveal" id="btn-reveal" type="button" aria-label="Show password" aria-pressed="false">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="row-between">
+        <label class="remember"><input type="checkbox" id="remember" checked> Keep me signed in</label>
+        <button class="linkish" id="btn-forgot" type="button">Forgot password?</button>
+      </div>
+
+      <button class="btn btn-red btn-block" id="btn-signin">
+        Sign in
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+
+      <div class="msg" id="out" hidden></div>
+
+      <div class="rule-sep"><span>New here</span></div>
+      <a class="btn btn-outline-navy btn-block" href="./register.html">Request staff access</a>
+
+      <p class="hint" style="text-align:center;margin-top:20px">
+        Access is approved by an administrator before you can report.<br>
+        Not staff? <a href="./index.html">Find a hospital bed</a>.
+      </p>
+    </div>
+
+    <div class="panel">
+      <h2>About this site</h2>
+      <p class="hint">
+        Accra Hospital Beds is an open-source student project mapping bed availability
+        at hospitals in Greater Accra. It is not affiliated with any hospital, bank,
+        government agency or commercial service, and it does not impersonate one.
+      </p>
+      <p class="hint">
+        This sign-in is only for hospital staff who report their own ward's bed counts.
+        Accounts are created on request and approved by hand. We never ask for payment
+        details, identity documents, or any information beyond an email address and a
+        password you choose.
+      </p>
+      <p class="hint">
+        Sign-in is handled by <a href="https://supabase.com" rel="noopener">Supabase</a>.
+        The full source code is public at
+        <a href="https://github.com/desmond-lartey/ghana-hospital-beds" rel="noopener">github.com/desmond-lartey/ghana-hospital-beds</a>,
+        so anyone can read exactly what this page does with what you type.
+      </p>
+      <p class="locked">
+        In a medical emergency in Ghana, call the National Ambulance Service on 112.
+        This site is not an emergency service.
+      </p>
+    </div>
+
+  </div>
 </main>
+
+<footer class="site-foot">
+  <div class="shell">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <div class="brand">
+          <svg class="brand-mark" viewBox="0 0 36 34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <g transform="skewX(-16)">
+              <rect x="10" y="4" width="6" height="26" rx="1.5" fill="#ffffff"/>
+              <rect x="19" y="4" width="6" height="26" rx="1.5" fill="#2ea8e6"/>
+              <rect x="28" y="4" width="6" height="26" rx="1.5" fill="#e0201b"/>
+            </g>
+          </svg>
+          <span class="brand-text"><b>ACCRA</b><span>HOSPITAL BEDS</span></span>
+        </div>
+        <p>
+          An open-source student project mapping hospital bed availability in
+          Greater Accra. Not affiliated with any hospital, bank or government agency.
+        </p>
+      </div>
+
+      <div>
+        <h4>THE MAP</h4>
+        <ul class="foot-links">
+          <li><a href="./index.html">Live map</a></li>
+          <li><a href="./index.html#hospital-list">All hospitals</a></li>
+          <li><a href="./suggest.html">Suggest a hospital</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>FOR STAFF</h4>
+        <ul class="foot-links">
+          <li><a href="./staff.html">Report bed counts</a></li>
+          <li><a href="./register.html">Request staff access</a></li>
+          <li><a href="https://github.com/desmond-lartey/ghana-hospital-beds" rel="noopener">Source code</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>IN AN EMERGENCY</h4>
+        <p class="foot-note">
+          This is a school project, not an official emergency service. If someone
+          needs help now, call the Ghana National Ambulance Service.
+        </p>
+        <a class="foot-emergency" href="tel:112">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
+          Call 112
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="foot-bar">
+    <div class="shell">&copy;<span id="year">2026</span> Accra Hospital Beds &middot; No tracking</div>
+  </div>
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="./config.js"></script>
+<script src="./ui.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 let client = null;

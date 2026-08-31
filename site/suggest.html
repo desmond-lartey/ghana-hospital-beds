@@ -3,227 +3,276 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Suggest a hospital</title>
+<title>Suggest a hospital — Accra Hospital Beds</title>
 <link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="./favicon.svg">
+<meta name="description" content="Propose a hospital or clinic for the Accra Hospital Beds map. Suggestions are reviewed before they appear.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-:root{
-  /* Crimson brand. The "full" status below is a deeper maroon so the two read
-     differently, and every status also carries a text label, so colour is never
-     the only thing telling a reader what they are looking at. */
-  --brand:#d42a3f;
-  --brand-2:#b21e31;
-  --brand-deep:#7c1120;
-  --brand-tint:#fdeced;
-  --brand-glow:rgba(212,42,63,.28);
-
-  --ink:#1b1215;--ink-2:#5a4a4f;--ink-3:#8d7c81;
-  --paper:#fffaf8;--card:#fff;--rule:#f0e3e1;--rule-2:#e0cdcb;
-
-  --go:#0e7a54;--go-bg:#e2f4ec;--go-line:#b6e0cf;
-  --wait:#b8730a;--wait-bg:#fdf0dc;--wait-line:#f2d9a8;
-  --stop:#8e1c2c;--stop-bg:#fae9eb;--stop-line:#eec4ca;
-  --none:#8d7c81;--none-bg:#f6efee;
-}
-@media (prefers-color-scheme: dark){
-  :root{
-    --brand:#8f9fe0;--brand-2:#a9b6ea;--brand-tint:#1b2140;
-    --ink:#eceef3;--ink-2:#a6adbe;--ink-3:#7b8296;
-    --paper:#0f1116;--card:#171a21;--rule:#282d38;--rule-2:#39404e;
-    --go:#5cc79f;--go-bg:#12312a;--wait:#e0a038;--wait-bg:#39290f;
-    --stop:#f0736f;--stop-bg:#3a1a19;--none:#8b949d;--none-bg:#20242d;
-  }
-}
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{background:var(--paper);color:var(--ink);
-  font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:16px;line-height:1.5;
-  -webkit-font-smoothing:antialiased}
-.wrap{max-width:560px;margin:0 auto;padding:0 16px 64px}
-header{padding:28px 0 18px;border-bottom:1px solid var(--rule)}
-h1{font-family:Archivo,sans-serif;font-weight:700;font-size:clamp(24px,5vw,32px);
-  letter-spacing:-.02em;line-height:1.1;margin:0 0 6px}
-.sub{color:var(--ink-2);font-size:15px;margin:0}
-h2{font-family:Archivo,sans-serif;font-weight:600;font-size:17px;margin:24px 0 12px;
-  letter-spacing:-.01em}
-label{display:block;font-size:13px;font-weight:500;color:var(--ink-2);margin:0 0 5px}
-input,select,textarea{
-  width:100%;font:inherit;font-size:16px;padding:11px 12px;border-radius:8px;
-  border:1px solid var(--rule-2);background:var(--card);color:var(--ink);min-height:44px}
-textarea{min-height:80px;resize:vertical}
-input:focus,select:focus,textarea:focus{outline:2px solid var(--ink);outline-offset:1px;border-color:var(--ink)}
-.field{margin:0 0 14px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:460px){.grid{grid-template-columns:1fr}}
-button{appearance:none;font:inherit;font-size:15px;font-weight:600;cursor:pointer;
-  padding:13px 20px;border-radius:8px;border:none;
-  background:var(--brand);color:#fff;width:100%;min-height:48px}
-button.ghost{background:transparent;color:var(--ink-2);border:1px solid var(--rule-2);
-  width:auto;padding:9px 16px;min-height:40px;font-weight:500;font-size:14px}
-button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-.err{color:var(--stop);font-size:13px;margin:6px 0 0;font-weight:500}
-.msg{padding:14px;border-radius:8px;font-size:14px;margin:16px 0 0;line-height:1.6}
-.msg.ok{background:var(--go-bg);color:var(--go)}
-.msg.bad{background:var(--stop-bg);color:var(--stop)}
-.notice{margin:20px 0 0;padding:13px 15px;border:1px solid var(--rule-2);
-  border-radius:8px;background:var(--card);font-size:14px;color:var(--ink-2);line-height:1.6}
-.notice b{color:var(--ink);font-weight:600}
-.hint{font-size:13px;color:var(--ink-3);margin:6px 0 0}
-.hint a{color:var(--ink-2)}
-.steps{list-style:none;padding:0;margin:10px 0 0;counter-reset:s}
-.steps li{counter-increment:s;position:relative;padding:0 0 0 30px;margin:0 0 8px;
-  font-size:14px;color:var(--ink-2);line-height:1.5}
-.steps li::before{content:counter(s);position:absolute;left:0;top:1px;
-  width:20px;height:20px;border-radius:50%;background:var(--none-bg);color:var(--ink-2);
-  font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;
-  display:flex;align-items:center;justify-content:center}
-pre{background:var(--none-bg);border-radius:8px;padding:12px;overflow-x:auto;
-  font-family:"IBM Plex Mono",monospace;font-size:12px;line-height:1.5;margin:10px 0 0;
-  color:var(--ink);white-space:pre-wrap;word-break:break-word}
-footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--rule);
-  font-size:13px;color:var(--ink-3)}
-footer a{color:var(--ink-2)}
-[hidden]{display:none!important}
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="./theme.css" rel="stylesheet">
 </head>
 <body>
-<div class="wrap">
 
-<header>
-  <h1>Suggest a hospital</h1>
-  <p class="sub">Anyone can propose a facility. Suggestions are reviewed before they appear on the map.</p>
+<a class="skip" href="#form">Skip to the suggestion form</a>
+
+<div class="utility">
+  <div class="shell">
+    <a href="https://github.com/desmond-lartey/ghana-hospital-beds" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a12 12 0 0 0-3.79 23.4c.6.11.82-.26.82-.58v-2.2c-3.34.72-4.04-1.42-4.04-1.42-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.21.08 1.84 1.24 1.84 1.24 1.07 1.84 2.81 1.31 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.11-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.65 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .5z"/></svg>
+      Open source
+    </a>
+    <a class="emergency" href="tel:112">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
+      Emergency: call 112
+    </a>
+  </div>
+</div>
+
+<header class="site-head">
+  <div class="shell">
+    <a class="brand" href="./index.html" aria-label="Accra Hospital Beds, home">
+      <svg class="brand-mark" viewBox="0 0 36 34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <g transform="skewX(-16)">
+          <rect x="10" y="4" width="6" height="26" rx="1.5" fill="#1e3a8f"/>
+          <rect x="19" y="4" width="6" height="26" rx="1.5" fill="#2ea8e6"/>
+          <rect x="28" y="4" width="6" height="26" rx="1.5" fill="#e0201b"/>
+        </g>
+      </svg>
+      <span class="brand-text"><b>ACCRA</b><span>HOSPITAL BEDS</span></span>
+    </a>
+
+    <button class="burger" id="burger" aria-expanded="false" aria-controls="nav" aria-label="Menu">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="./index.html">Live map</a>
+      <a href="./index.html#hospital-list">Hospitals</a>
+      <a href="./staff.html">Report bed counts</a>
+      <a href="./register.html">Request staff access</a>
+      <a href="./suggest.html" aria-current="page">Suggest a hospital</a>
+    </nav>
+
+    <div class="head-tools">
+      <a class="btn btn-outline-navy btn-sm" href="./login.html">Sign in</a>
+      <a class="phone-pill" href="tel:112">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
+        <span>Ambulance 112</span>
+      </a>
+    </div>
+  </div>
 </header>
 
-<div class="notice">
-  <b>Suggestions are not published automatically.</b> An administrator verifies each facility against
-  the HeFRA licensed register before it becomes visible. Under the Health Institutions and Facilities
-  Act, 2011 (Act 829), a facility may not legally operate without a HeFRA licence, and directing an
-  ambulance to an unverified address costs time that patients do not have.
-</div>
-
-<section id="form">
-  <h2>Facility details</h2>
-
-  <div class="field">
-    <label for="name">Hospital name <span aria-hidden="true">*</span></label>
-    <input id="name" type="text" autocomplete="organization" placeholder="As registered with HeFRA">
-  </div>
-
-  <div class="grid">
-    <div class="field">
-      <label for="type">Facility type <span aria-hidden="true">*</span></label>
-      <select id="type">
-        <option value="">Select</option>
-        <option>Teaching</option>
-        <option>Government</option>
-        <option>Private</option>
-        <option>Clinic</option>
-        <option>Polyclinic</option>
-      </select>
-    </div>
-    <div class="field">
-      <label for="area">Area or suburb <span aria-hidden="true">*</span></label>
-      <input id="area" type="text" placeholder="Osu, Madina, Tema">
-    </div>
-  </div>
-
-  <div class="field">
-    <label for="address">Street address <span aria-hidden="true">*</span></label>
-    <input id="address" type="text" autocomplete="street-address">
-  </div>
-
-  <div class="field">
-    <label for="phone">Main phone number</label>
-    <input id="phone" type="tel" autocomplete="tel" placeholder="+233 ...">
-  </div>
-
-  <div class="field">
-    <label for="licence">HeFRA licence number, if known</label>
-    <input id="licence" type="text">
-    <p class="hint">Speeds up review. Leave blank if unknown; it will be looked up.</p>
-  </div>
-
-  <h2>Location</h2>
-
-  <div class="grid">
-    <div class="field">
-      <label for="lat">Latitude <span aria-hidden="true">*</span></label>
-      <input id="lat" type="number" step="0.000001" inputmode="decimal" placeholder="5.5359">
-    </div>
-    <div class="field">
-      <label for="lon">Longitude <span aria-hidden="true">*</span></label>
-      <input id="lon" type="number" step="0.000001" inputmode="decimal" placeholder="-0.2264">
-    </div>
-  </div>
-  <p class="hint">
-    On Google Maps, long-press the building and copy the two numbers shown.
-    <a href="https://www.google.com/maps" target="_blank" rel="noopener">Open Maps</a>
-  </p>
-  <div style="margin-top:10px"><button class="ghost" id="btn-locate" type="button">Use my current location</button></div>
-
-  <h2>About you</h2>
-
-  <div class="field">
-    <label for="by">Your name <span aria-hidden="true">*</span></label>
-    <input id="by" type="text" autocomplete="name">
-  </div>
-
-  <div class="field">
-    <label for="contact">Email or phone <span aria-hidden="true">*</span></label>
-    <input id="contact" type="text" autocomplete="email">
-    <p class="hint">Used only to follow up on this suggestion.</p>
-  </div>
-
-  <div class="field">
-    <label for="relation">Your relationship to the facility</label>
-    <select id="relation">
-      <option value="">Select</option>
-      <option>I work at this facility</option>
-      <option>I am a health worker elsewhere</option>
-      <option>Ambulance or emergency service</option>
-      <option>Member of the public</option>
-    </select>
-  </div>
-
-  <div class="field">
-    <label for="notes">Anything else worth knowing</label>
-    <textarea id="notes" placeholder="Services offered, ICU capacity, opening hours"></textarea>
-  </div>
-
-  <p class="err" id="err" hidden></p>
-  <div style="margin-top:6px"><button id="btn-submit">Submit for review</button></div>
-  <div class="msg" id="out" hidden></div>
-</section>
-
-<section id="manual" hidden>
-  <h2>Send this suggestion</h2>
-  <p class="sub" style="margin-bottom:4px">
-    No review server is connected yet, so the suggestion could not be filed automatically.
-    It is ready below.
-  </p>
-  <ol class="steps">
-    <li>Copy the record.</li>
-    <li>Open a new issue on the project repository.</li>
-    <li>Paste it in and submit. An administrator reviews it from there.</li>
-  </ol>
-  <pre id="payload"></pre>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-    <button class="ghost" id="btn-copy" type="button">Copy record</button>
-    <button class="ghost" id="btn-issue" type="button">Open an issue</button>
+<section class="page-head">
+  <div class="hero-blob" aria-hidden="true"></div>
+  <div class="shell">
+    <p class="eyebrow">OPEN TO EVERYONE</p>
+    <h1>Suggest a hospital</h1>
+    <p>Anyone can propose a facility. Suggestions are reviewed before they appear on the map.</p>
   </div>
 </section>
 
-<footer>
-  <p><a href="./index.html">Back to the map</a> &middot; <a href="./staff.html">Staff bed reporting</a></p>
+<main class="form-wrap">
+  <div class="shell-narrow">
+
+    <section class="panel" id="form">
+      <p class="notice" style="margin-top:0;margin-bottom:26px">
+        <b>Suggestions are not published automatically.</b> An administrator verifies each facility against
+        the HeFRA licensed register before it becomes visible. Under the Health Institutions and Facilities
+        Act, 2011 (Act 829), a facility may not legally operate without a HeFRA licence, and directing an
+        ambulance to an unverified address costs time that patients do not have.
+      </p>
+
+      <h2>Facility details</h2>
+      <p class="panel-lede">Everything marked with a red star is needed before review can start.</p>
+
+      <div class="field">
+        <label for="name">Hospital name <span aria-hidden="true">*</span></label>
+        <input id="name" type="text" autocomplete="organization" placeholder="As registered with HeFRA">
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label for="type">Facility type <span aria-hidden="true">*</span></label>
+          <select id="type">
+            <option value="">Select</option>
+            <option>Teaching</option>
+            <option>Government</option>
+            <option>Private</option>
+            <option>Clinic</option>
+            <option>Polyclinic</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="area">Area or suburb <span aria-hidden="true">*</span></label>
+          <input id="area" type="text" placeholder="Osu, Madina, Tema">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="address">Street address <span aria-hidden="true">*</span></label>
+        <input id="address" type="text" autocomplete="street-address">
+      </div>
+
+      <div class="field">
+        <label for="phone">Main phone number</label>
+        <input id="phone" type="tel" autocomplete="tel" placeholder="+233 ...">
+      </div>
+
+      <div class="field">
+        <label for="licence">HeFRA licence number, if known</label>
+        <input id="licence" type="text">
+        <p class="hint">Speeds up review. Leave blank if unknown; it will be looked up.</p>
+      </div>
+
+      <h2 style="margin-top:32px">Location</h2>
+
+      <div class="grid-2">
+        <div class="field">
+          <label for="lat">Latitude <span aria-hidden="true">*</span></label>
+          <input id="lat" type="number" step="0.000001" inputmode="decimal" placeholder="5.5359">
+        </div>
+        <div class="field">
+          <label for="lon">Longitude <span aria-hidden="true">*</span></label>
+          <input id="lon" type="number" step="0.000001" inputmode="decimal" placeholder="-0.2264">
+        </div>
+      </div>
+      <p class="hint">
+        On Google Maps, long-press the building and copy the two numbers shown.
+        <a href="https://www.google.com/maps" target="_blank" rel="noopener">Open Maps</a>
+      </p>
+      <div style="margin-top:12px">
+        <button class="btn btn-outline-navy" id="btn-locate" type="button">Use my current location</button>
+      </div>
+
+      <h2 style="margin-top:32px">About you</h2>
+
+      <div class="field">
+        <label for="by">Your name <span aria-hidden="true">*</span></label>
+        <input id="by" type="text" autocomplete="name">
+      </div>
+
+      <div class="field">
+        <label for="contact">Email or phone <span aria-hidden="true">*</span></label>
+        <input id="contact" type="text" autocomplete="email">
+        <p class="hint">Used only to follow up on this suggestion.</p>
+      </div>
+
+      <div class="field">
+        <label for="relation">Your relationship to the facility</label>
+        <select id="relation">
+          <option value="">Select</option>
+          <option>I work at this facility</option>
+          <option>I am a health worker elsewhere</option>
+          <option>Ambulance or emergency service</option>
+          <option>Member of the public</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="notes">Anything else worth knowing</label>
+        <textarea id="notes" placeholder="Services offered, ICU capacity, opening hours"></textarea>
+      </div>
+
+      <p class="err" id="err" hidden></p>
+      <button class="btn btn-red btn-block" id="btn-submit" style="margin-top:8px">Submit for review</button>
+      <div class="msg" id="out" hidden></div>
+    </section>
+
+    <section class="panel" id="manual" hidden>
+      <h2>Send this suggestion</h2>
+      <p class="panel-lede">
+        No review server is connected yet, so the suggestion could not be filed automatically.
+        It is ready below.
+      </p>
+      <ol class="steps">
+        <li>Copy the record.</li>
+        <li>Open a new issue on the project repository.</li>
+        <li>Paste it in and submit. An administrator reviews it from there.</li>
+      </ol>
+      <pre id="payload"></pre>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+        <button class="btn btn-outline-navy" id="btn-copy" type="button">Copy record</button>
+        <button class="btn btn-outline" id="btn-issue" type="button">Open an issue</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Why review takes a little time</h2>
+      <ul class="ticks" style="margin-bottom:0">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg> The facility is checked against the HeFRA licensed register.</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg> The coordinates are confirmed, because a wrong pin sends a driver to the wrong gate.</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg> Only then does it appear on the public map.</li>
+      </ul>
+      <p class="locked">
+        <a href="./index.html">Back to the map</a> &middot;
+        <a href="./staff.html">Staff bed reporting</a>
+      </p>
+    </section>
+
+  </div>
+</main>
+
+<footer class="site-foot">
+  <div class="shell">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <div class="brand">
+          <svg class="brand-mark" viewBox="0 0 36 34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <g transform="skewX(-16)">
+              <rect x="10" y="4" width="6" height="26" rx="1.5" fill="#ffffff"/>
+              <rect x="19" y="4" width="6" height="26" rx="1.5" fill="#2ea8e6"/>
+              <rect x="28" y="4" width="6" height="26" rx="1.5" fill="#e0201b"/>
+            </g>
+          </svg>
+          <span class="brand-text"><b>ACCRA</b><span>HOSPITAL BEDS</span></span>
+        </div>
+        <p>
+          An open-source student project mapping hospital bed availability in
+          Greater Accra. Not affiliated with any hospital, bank or government agency.
+        </p>
+      </div>
+
+      <div>
+        <h4>THE MAP</h4>
+        <ul class="foot-links">
+          <li><a href="./index.html">Live map</a></li>
+          <li><a href="./index.html#hospital-list">All hospitals</a></li>
+          <li><a href="./suggest.html">Suggest a hospital</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>FOR STAFF</h4>
+        <ul class="foot-links">
+          <li><a href="./staff.html">Report bed counts</a></li>
+          <li><a href="./register.html">Request staff access</a></li>
+          <li><a href="./login.html">Sign in</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>IN AN EMERGENCY</h4>
+        <p class="foot-note">
+          This is a school project, not an official emergency service. If someone
+          needs help now, call the Ghana National Ambulance Service.
+        </p>
+        <a class="foot-emergency" href="tel:112">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
+          Call 112
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="foot-bar">
+    <div class="shell">&copy;<span id="year">2026</span> Accra Hospital Beds &middot; No tracking</div>
+  </div>
 </footer>
-
-</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="./config.js"></script>
+<script src="./ui.js"></script>
 <script>
 // Suggestions go to Supabase, into a table separate from the published map.
 // A row level security policy allows anyone to insert and nobody to read back,
