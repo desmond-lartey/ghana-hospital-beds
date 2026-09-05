@@ -98,7 +98,7 @@ convenience:
 
 The platform is built and deployed. The public map, staff reporting, staff
 registration and approval, and facility suggestion and review are all live and
-working end to end.
+working end to end. [[check the app with this link](https://ghana-hospital-beds.vercel.app/)].
 
 What the system does not yet have is participating hospitals. The twenty-two
 facilities listed carry identity data drawn from public directories, with bed
