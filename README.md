@@ -331,7 +331,7 @@ In Vercel, add the domain under Settings, Domains, then create the DNS record it
 
 **Suggestion abuse.** The suggestion table accepts anonymous inserts with no rate limit. Acceptable while the project is small; a per-IP limit or a sign-in requirement would be needed at scale.
 
-**Project pausing.** Supabase pauses free projects after a period of inactivity. Daily reporting keeps it awake, but a long university break might not.
+**Project pausing.** Supabase pauses free projects after a period of inactivity. Daily reporting keeps it awake, but a long break might not.
 
 **SMS reporting.** Carriers charge per message on every platform, so this is the one component that cannot be free. Out of scope pending a decision on whether the cost is justified for hospitals without reliable data access.
 
