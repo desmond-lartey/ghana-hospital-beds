@@ -1,10 +1,10 @@
 /* ==========================================================================
-   Accra Hospital Beds — shared theme
+   Accra Hospital Beds - shared theme
    --------------------------------------------------------------------------
    One stylesheet for every page, so the site reads as one product rather than
    five pages that happen to share a domain.
 
-   Palette is red, white and blue. Navy carries structure — the header, the
+   Palette is red, white and blue. Navy carries structure - the header, the
    footer, headings and the wide bands. Red is reserved for the thing you are
    meant to press. Nothing else is allowed to be red, which is what keeps a red
    button meaningful on a page about emergencies.
@@ -1022,7 +1022,7 @@ body.workspace .panel-foot{padding-bottom:74px}
    Feedback widget  (every page)
    --------------------------------------------------------------------------
    Navy, not red. Red on this site means the thing you are meant to press right
-   now — the call button, the emergency number — and a feedback button is never
+   now - the call button, the emergency number - and a feedback button is never
    that. It sits above the fold of the footer on every page and stays out of the
    way of the map.
    ========================================================================== */

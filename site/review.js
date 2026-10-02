@@ -17,7 +17,7 @@
    Supabase Realtime then carries the same change to everyone else in the
    session so their screen updates without a refresh, and carries cursors so you
    can see where the other person is looking. Realtime is a courier, never a
-   source of truth — if the socket never connects, a poll every twelve seconds
+   source of truth - if the socket never connects, a poll every twelve seconds
    keeps the session correct, just less immediate. Losing the socket costs
    latency, not data. */
 
@@ -424,7 +424,7 @@
     if (!sb || !session) return Promise.resolve();
     return sb.rpc("open_review_session", { p_code: session.code }).then(function (res) {
       if (res.error) {
-        // The session ended underneath us — expired, or closed by an
+        // The session ended underneath us - expired, or closed by an
         // administrator. Say so instead of polling a dead code forever.
         stopPolling();
         say("This session has ended. The notes are kept, but the code no longer opens.", "warn");
@@ -806,7 +806,7 @@
       label.textContent = me.name;
       label.classList.remove("unset");
     } else {
-      label.textContent = 'No name set — notes will show as "Author"';
+      label.textContent = 'No name set - notes will show as "Author"';
       label.classList.add("unset");
     }
     renderPresence();

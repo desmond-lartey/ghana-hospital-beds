@@ -6,7 +6,7 @@
 
    This is deliberately NOT the live review session. A review session is
    synchronous and arranged: two people agree to be on the map at the same time.
-   Feedback is the opposite — it is for the person who notices something at
+   Feedback is the opposite - it is for the person who notices something at
    eleven at night and would otherwise have nowhere to put it. So it promises
    nothing about when it will be read, and it says so on the form rather than
    implying a staffed desk.
@@ -60,7 +60,7 @@
 
           '<form id="fb-form" class="fb-body">' +
             '<p class="fb-lede">' +
-              "Wrong number, a hospital that has moved, a page that will not load — " +
+              "Wrong number, a hospital that has moved, a page that will not load - " +
               "anything you noticed. It goes to the people who maintain the map." +
             "</p>" +
 

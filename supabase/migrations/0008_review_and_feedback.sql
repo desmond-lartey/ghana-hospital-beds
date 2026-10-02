@@ -5,8 +5,8 @@
 -- REVIEW SESSIONS are synchronous. Two or more people open the same map from a
 -- session code and leave notes anchored to specific hospitals: a pin in the
 -- wrong place, a phone number that no longer answers, a facility that has moved.
--- This is the workflow that clears the prerequisites in the README — nineteen of
--- twenty-two coordinates are approximate, and several phone numbers are blank —
+-- This is the workflow that clears the prerequisites in the README - nineteen of
+-- twenty-two coordinates are approximate, and several phone numbers are blank -
 -- and it is the reason to get a hospital's records officer on a call.
 --
 -- FEEDBACK is asynchronous. One message, from anyone, at any time, with nobody

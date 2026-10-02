@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Request staff access — Accra Hospital Beds</title>
+<title>Request staff access - Accra Hospital Beds</title>
 <link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="./favicon.svg">
 <meta name="description" content="Hospital staff in Greater Accra can request an account to report bed availability.">
@@ -245,7 +245,7 @@ async function loadHospitals(){
   select.innerHTML = '<option value="">Select your hospital</option>' +
     data.map(h => '<option value="' + h.id + '">' +
       String(h.name).replace(/[<>&]/g, "") +
-      (h.region_area ? " — " + String(h.region_area).replace(/[<>&]/g, "") : "") +
+      (h.region_area ? " - " + String(h.region_area).replace(/[<>&]/g, "") : "") +
       "</option>").join("");
 }
 

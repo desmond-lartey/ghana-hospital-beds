@@ -1,6 +1,6 @@
 /* Header behaviour shared by every page: the mobile menu and the nav dropdowns.
    Kept deliberately small. Nothing here is required for the map, the hospital
-   list or any form to work — if this file fails to load, every link in the
+   list or any form to work - if this file fails to load, every link in the
    header is still a plain link that goes where it says it goes. */
 
 (function () {

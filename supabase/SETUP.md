@@ -218,7 +218,7 @@ cursors on the map.
 
 Supabase Realtime is on by default for new projects. Nothing here needs a table
 added to a publication, because the session uses **broadcast** rather than
-database change feeds — the message is sent peer to peer through the Realtime
+database change feeds - the message is sent peer to peer through the Realtime
 service and never touches a table.
 
 If a session shows *Live · refreshing every few seconds* rather than a steady
@@ -261,7 +261,7 @@ update feedback set handled = true where id = '...';
 
 A session code is the whole of its authorisation. Anyone holding one can read
 and write that session's notes without an account, and anyone without one gets
-nothing — the client has no privileges on `review_sessions`, `review_notes` or
+nothing - the client has no privileges on `review_sessions`, `review_notes` or
 `review_replies` at all, and every operation goes through a `security definer`
 function that checks the code first.
 

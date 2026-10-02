@@ -1,4 +1,4 @@
-# Accra Hospital Beds — security contact
+# Accra Hospital Beds - security contact
 # https://www.rfc-editor.org/rfc/rfc9116
 
 Contact: https://ghana-hospital-beds.vercel.app/suggest.html

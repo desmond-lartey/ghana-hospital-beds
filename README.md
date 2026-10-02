@@ -116,7 +116,7 @@ software is ready for a pilot; the pilot is what produces the evidence.
 
 Yevoo, L.L., Amarteyfio, K.A., Ansah-Antwi, J.A., Wallace, L., Menka, E.,
 Ofori-Ansah, G., Nyampong, I., Mayeden, S., & Agyepong, I.A. (2023). The "No
-bed syndrome" in Ghana — what, how and why? A literature, electronic and print
+bed syndrome" in Ghana - what, how and why? A literature, electronic and print
 media review. *Frontiers in Health Services*, 3, 1012014.
 https://doi.org/10.3389/frhs.2023.1012014
 
@@ -210,7 +210,7 @@ Three tiers, enforced by row level security rather than by application code.
 | Applicant | Registered but unapproved | Sign in, see their request status | Report for any hospital |
 | Staff | Approved and linked to a hospital | Update that hospital's counts, phone, address and notes | Touch another hospital, or move any pin |
 | Reviewer | Anyone holding a session code | Read and write notes in that session | Reach any other session, or change hospital data |
-| Administrator | Supabase dashboard | Approve requests, publish hospitals, review suggestions and feedback | — |
+| Administrator | Supabase dashboard | Approve requests, publish hospitals, review suggestions and feedback | - |
 
 A staff account is two things: a user, and a row in `hospital_staff` linking it to a hospital. Registration creates the first; only an approval writes the second. Without the link the account signs in but sees nothing and can change nothing. That is the intended behaviour, not a fault, and it is what makes open sign-ups safe.
 
@@ -273,13 +273,13 @@ Staff may also correct their own hospital's contact details, in a panel kept sep
 Two ways to tell the project something is wrong. They are deliberately separate,
 because they answer different questions.
 
-### Review sessions — `site/review.html`
+### Review sessions - `site/review.html`
 
 A **live, shared map**. One person starts a session and reads out an eight
 character code; anyone with the code opens the same map, and notes dropped on a
 hospital appear on everyone's screen as they are typed. Each note records what
-kind of correction it is — wrong position, wrong number, wrong details, a
-missing facility — and carries a thread, so a disagreement is settled in place
+kind of correction it is - wrong position, wrong number, wrong details, a
+missing facility - and carries a thread, so a disagreement is settled in place
 rather than in a side conversation.
 
 This exists because of the prerequisites listed above: nineteen of twenty-two
@@ -298,7 +298,7 @@ is one small step from someone typing *we need a bed in Osu, now* into a room
 where nobody is sitting. The panel says so at the bottom of every session, and
 anything resembling an emergency goes to 112.
 
-### Feedback — the button on every page
+### Feedback - the button on every page
 
 A **short asynchronous form**, open to anyone, with nobody required to be
 present. A wrong phone number noticed at eleven at night has somewhere to go,
@@ -321,7 +321,7 @@ people in the session so their screen updates without a refresh, and carries
 cursors so you can see where someone else is looking.
 
 Realtime is a courier, never a source of truth. If the socket never connects,
-the session still works — a poll every twelve seconds keeps it correct, and the
+the session still works - a poll every twelve seconds keeps it correct, and the
 status line says so rather than pretending. Losing the socket costs latency, not
 data.
 
