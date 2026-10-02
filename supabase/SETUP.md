@@ -200,3 +200,84 @@ update hospitals
 **The suggestion form has no rate limit.** Anyone may insert, which is the point, but it also means the table can be flooded. If that becomes a problem, add a per-IP limit through an edge function, or require sign-in to submit.
 
 **The anonymous key is visible to anyone who views the page.** That is by design. The protection is the policies, not the key, which is why it matters that the policies are correct rather than that the key is hidden.
+
+---
+
+## Review sessions and feedback
+
+Migration `0008_review_and_feedback.sql` adds the shared map review workspace
+(`site/review.html`) and the feedback button that sits on every page. Run it in
+the SQL Editor like the others, after `0007`.
+
+### Turn on Realtime
+
+The review workspace writes every note through the database, so it is correct
+the moment the migration is applied. What Realtime adds is immediacy: the other
+people in a session see a note appear without refreshing, and see each other's
+cursors on the map.
+
+Supabase Realtime is on by default for new projects. Nothing here needs a table
+added to a publication, because the session uses **broadcast** rather than
+database change feeds — the message is sent peer to peer through the Realtime
+service and never touches a table.
+
+If a session shows *Live · refreshing every few seconds* rather than a steady
+green dot, Realtime is not reachable from the browser. The session still works;
+it falls back to polling every twelve seconds. Check **Settings → API → Realtime**
+is enabled, and that no network in between is blocking WebSockets.
+
+### Reviewing what comes in
+
+Two views are provided for the SQL Editor. Neither is reachable by the client
+roles, which is why neither carries a grant.
+
+```sql
+-- Feedback nobody has dealt with yet
+select * from pending_feedback;
+
+-- Sessions and how much is still open in each
+select * from review_session_summary;
+```
+
+To read a session's notes as a work list:
+
+```sql
+select n.kind, h.name as hospital, n.body, n.author_name, n.resolved, n.created_at
+  from review_notes n
+  join review_sessions s on s.id = n.session_id
+  left join hospitals h on h.id = n.hospital_id
+ where s.code = 'ABCD2345'
+ order by n.resolved, n.created_at;
+```
+
+Mark feedback handled once it has been acted on, so `pending_feedback` stays a
+queue rather than an archive:
+
+```sql
+update feedback set handled = true where id = '...';
+```
+
+### What a session can and cannot reach
+
+A session code is the whole of its authorisation. Anyone holding one can read
+and write that session's notes without an account, and anyone without one gets
+nothing — the client has no privileges on `review_sessions`, `review_notes` or
+`review_replies` at all, and every operation goes through a `security definer`
+function that checks the code first.
+
+Nothing in a session can change hospital data. A note saying a pin is wrong is a
+note; moving the pin is still an administrator action, for the reason given
+above. That separation is deliberate: a review session is where a correction is
+agreed, not where it is applied.
+
+Sessions expire thirty days after they are created. The notes remain in the
+table after that, so a review is not lost when its code stops opening:
+
+```sql
+-- Everything still open, across every session, oldest first
+select s.code, s.label, n.kind, n.body, n.created_at
+  from review_notes n
+  join review_sessions s on s.id = n.session_id
+ where not n.resolved
+ order by n.created_at;
+```

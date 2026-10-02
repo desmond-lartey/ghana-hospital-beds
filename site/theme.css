@@ -710,3 +710,404 @@ pre{
   .marquee-track{flex-wrap:wrap;width:auto}
   .marquee{-webkit-mask-image:none;mask-image:none}
 }
+
+/* ==========================================================================
+   Map review workspace  (review.html)
+   --------------------------------------------------------------------------
+   A two-column working surface rather than a reading page: the map holds the
+   left, the notes panel the right, and neither scrolls the other. The site
+   header stays, because someone who wandered in here still needs the way out.
+
+   The panel borrows its shape from a review tool rather than from the rest of
+   this site on purpose. This is the one screen where people are working on the
+   data instead of reading it.
+   ========================================================================== */
+
+body.workspace{overflow:hidden}
+
+.work{
+  display:grid;
+  grid-template-columns:1fr 400px;
+  height:calc(100dvh - 77px);      /* the sticky header is 76px plus its rule */
+  min-height:420px;
+}
+
+/* ------------------------------------------------------------------- map -- */
+.work-map{position:relative;min-width:0}
+#review-map{position:absolute;inset:0;background:var(--mist-2)}
+#review-map.placing{cursor:crosshair}
+#review-map.placing .maplibregl-canvas{cursor:crosshair}
+.map-fallback{padding:24px;color:var(--ink-3);font-size:15px}
+
+.placing-hint{
+  position:absolute;left:50%;top:16px;transform:translateX(-50%);z-index:5;
+  display:flex;align-items:center;gap:9px;white-space:nowrap;
+  background:var(--navy);color:#fff;font-size:14px;font-weight:600;
+  padding:10px 16px;border-radius:999px;box-shadow:var(--shadow);
+}
+.placing-hint svg{width:16px;height:16px;flex:0 0 16px}
+.placing-hint kbd{
+  background:rgba(255,255,255,.2);border-radius:4px;padding:1px 6px;
+  font-family:inherit;font-size:12px;
+}
+
+.map-legend{
+  position:absolute;left:12px;bottom:12px;z-index:5;
+  display:flex;flex-direction:column;gap:6px;
+  background:rgba(255,255,255,.94);border:1px solid var(--rule);
+  border-radius:6px;padding:9px 12px;font-size:12.5px;color:var(--ink-2);
+}
+.map-legend span{display:flex;align-items:center;gap:8px}
+.swatch{width:11px;height:11px;border-radius:50%;flex:0 0 11px;display:block}
+.swatch.is-hosp{background:#fff;border:2px solid var(--navy)}
+/* A note pin in miniature. Navy rather than red because the real pins take
+   their colour from whoever left them, and red would imply a fixed meaning. */
+.swatch.is-note{background:var(--navy);border-radius:50% 50% 50% 2px;transform:rotate(-45deg)}
+
+/* Hospitals are context here, not the subject, so they read as reference dots
+   rather than as the status pins they are on the public map. */
+.hosp-dot{
+  width:11px;height:11px;border-radius:50%;cursor:pointer;
+  background:#fff;border:2px solid var(--navy);
+  box-shadow:0 0 0 1px rgba(255,255,255,.9);
+}
+.hosp-dot:hover{background:var(--mist)}
+
+/* A numbered teardrop, so a pin on the map and a card in the list carry the
+   same number and can be matched across a phone call. */
+.note-pin{
+  position:relative;width:26px;height:26px;cursor:pointer;
+  border-radius:50% 50% 50% 2px;transform:rotate(-45deg);
+  background:var(--pin,var(--red));border:2px solid #fff;
+  box-shadow:0 2px 6px rgba(13,26,69,.4);
+  display:flex;align-items:center;justify-content:center;
+}
+/* The teardrop is rotated, so the number is counter-rotated to stay upright. */
+.note-pin span{
+  transform:rotate(45deg);line-height:1;
+  font-family:Archivo,sans-serif;font-weight:700;font-size:12px;color:#fff;
+}
+.note-pin.resolved{opacity:.45}
+.note-pin.selected{outline:3px solid var(--sky);outline-offset:2px}
+.note-pin:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+
+/* Someone else's pointer. The label rides alongside so two cursors in the same
+   area stay tellable apart without hovering. */
+.peer-cursor{display:flex;align-items:flex-start;gap:4px;pointer-events:none}
+.peer-cursor svg{width:20px;height:20px;fill:var(--peer,var(--navy));
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
+.peer-cursor span{
+  background:var(--peer,var(--navy));color:#fff;font-size:11px;font-weight:700;
+  padding:2px 7px;border-radius:999px;white-space:nowrap;margin-top:10px;
+}
+
+/* ----------------------------------------------------------------- panel -- */
+.work-panel{
+  display:flex;flex-direction:column;min-height:0;
+  background:#fff;border-left:1px solid var(--rule);
+}
+
+.panel-top{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:12px 14px;border-bottom:1px solid var(--rule);flex:0 0 auto;
+}
+.panel-top h1{
+  font-size:16px;display:flex;align-items:center;gap:8px;margin:0;
+}
+.panel-top .count{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:22px;height:20px;padding:0 6px;border-radius:999px;
+  background:var(--mist-2);color:var(--ink-2);font-size:12px;font-weight:700;
+  font-family:Figtree,sans-serif;
+}
+#btn-add-note[aria-pressed="true"]{background:var(--navy);border-color:var(--navy)}
+
+.name-bar{
+  padding:9px 14px;border-bottom:1px solid var(--rule);background:var(--mist-3);
+  flex:0 0 auto;
+}
+.name-row,.name-edit{display:flex;align-items:center;gap:9px}
+.name-row .ico{width:15px;height:15px;color:var(--ink-3);flex:0 0 15px}
+#name-display{font-size:13px;color:var(--ink);font-weight:600;flex:1;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#name-display.unset{font-style:italic;font-weight:400;color:var(--ink-3)}
+#name-pencil{
+  appearance:none;background:none;border:none;cursor:pointer;padding:4px;
+  color:var(--ink-3);border-radius:4px;display:flex;flex:0 0 auto;
+}
+#name-pencil svg{width:14px;height:14px}
+#name-pencil:hover{color:var(--navy);background:var(--mist)}
+.name-edit input{height:34px;min-height:34px;font-size:14px;padding:6px 10px}
+
+/* --------------------------------------------------------- session box -- */
+.session-box{
+  padding:12px 14px;border-bottom:1px solid var(--rule);
+  background:var(--mist-2);flex:0 0 auto;
+}
+#new-label{
+  height:36px;min-height:36px;font-size:13.5px;padding:8px 11px;margin:0 0 8px;
+}
+.live-dot{
+  width:8px;height:8px;border-radius:50%;background:#3ddb9a;flex:0 0 8px;
+  animation:pulse 2.4s ease-in-out infinite;
+}
+.or-rule{display:flex;align-items:center;gap:10px;margin:12px 0}
+.or-rule::before,.or-rule::after{content:"";flex:1;height:1px;background:var(--rule-2)}
+.or-rule span{font-size:11.5px;color:var(--ink-3);font-weight:600}
+
+.join-row{display:flex;gap:7px}
+#join-code{
+  flex:1;min-width:0;height:40px;min-height:40px;font-size:13.5px;
+  letter-spacing:.14em;text-transform:uppercase;text-align:center;
+  font-weight:700;padding:8px 10px;
+}
+#join-code::placeholder{letter-spacing:.08em;font-weight:500}
+.join-row .btn{min-height:40px;padding:10px 16px;font-size:14px;flex:0 0 auto}
+
+.code-card{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:#fff;border:1px solid var(--rule-2);border-radius:6px;padding:10px 12px;
+}
+.code-label{display:block;font-size:10.5px;font-weight:700;color:var(--ink-3)}
+.code{
+  display:block;font-family:Archivo,monospace;font-weight:800;font-size:19px;
+  letter-spacing:.14em;color:var(--navy);line-height:1.25;
+}
+.code-sub{display:block;font-size:12px;color:var(--ink-3);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px}
+
+.session-state{
+  display:flex;align-items:center;gap:8px;margin:9px 0 0;
+  font-size:12.5px;color:var(--ink-2);font-weight:500;
+}
+.session-state .dot{
+  width:9px;height:9px;border-radius:50%;flex:0 0 9px;background:var(--ink-3);
+}
+.session-state .dot.live{background:#16a34a;animation:pulse 2.4s ease-in-out infinite}
+.session-state .dot.degraded{background:var(--wait)}
+.session-state .leave{
+  appearance:none;background:none;border:none;cursor:pointer;font:inherit;
+  font-size:12px;font-weight:700;color:var(--red);padding:2px 4px;margin-left:auto;
+}
+.session-state .leave:hover{text-decoration:underline}
+
+.avatars{display:flex;margin-left:auto}
+.session-state .avatars + .leave{margin-left:8px}
+.avatar{
+  width:22px;height:22px;border-radius:50%;flex:0 0 22px;color:#fff;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-family:Archivo,sans-serif;font-weight:700;font-size:9.5px;
+  border:2px solid #fff;margin-left:-6px;
+}
+.avatar:first-child{margin-left:0}
+.avatar.sm{width:19px;height:19px;flex:0 0 19px;font-size:8.5px;margin:0;border-width:0}
+
+.session-msg{
+  margin:9px 0 0;padding:8px 10px;border-radius:5px;font-size:12.5px;line-height:1.5;
+}
+.session-msg.bad{background:var(--stop-bg);color:var(--stop)}
+.session-msg.warn{background:var(--wait-bg);color:var(--wait)}
+.session-msg.info{background:#fff;color:var(--ink-2);border:1px solid var(--rule)}
+
+/* ------------------------------------------------------------------ tabs -- */
+.tabs{display:flex;gap:5px;padding:9px 14px;border-bottom:1px solid var(--rule);flex:0 0 auto}
+.tabs button{
+  flex:1;appearance:none;cursor:pointer;font:inherit;font-size:12px;font-weight:600;
+  padding:6px 6px;border-radius:5px;border:1px solid transparent;
+  background:none;color:var(--ink-3);
+}
+.tabs button:hover{background:var(--mist-2);color:var(--ink)}
+.tabs button[aria-pressed="true"]{
+  background:#fff;border-color:var(--rule-2);color:var(--navy);box-shadow:var(--shadow-2);
+}
+
+/* ----------------------------------------------------------------- notes -- */
+.note-list{flex:1;overflow-y:auto;padding:12px 14px;min-height:0}
+
+.note-list .empty{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:30px 16px;border:1px dashed var(--rule-2);
+  border-radius:8px;background:var(--mist-3);color:var(--ink-3);gap:2px;
+}
+.note-list .empty svg{width:30px;height:30px;color:var(--rule-2);margin-bottom:8px}
+.note-list .empty p{margin:0;font-size:12.5px;line-height:1.55;max-width:230px}
+.note-list .empty p b{color:var(--ink);font-size:13.5px}
+
+.note{
+  background:#fff;border:1px solid var(--rule);border-radius:7px;
+  padding:11px 12px;margin:0 0 10px;box-shadow:var(--shadow-2);
+}
+.note.is-resolved{opacity:.72;background:var(--mist-3)}
+.note.is-selected{border-color:var(--navy);box-shadow:0 0 0 2px rgba(30,58,143,.16)}
+
+.note header{display:flex;align-items:center;gap:8px;margin:0 0 7px}
+.pin-no{
+  width:21px;height:21px;border-radius:50%;flex:0 0 21px;color:#fff;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-family:Archivo,sans-serif;font-weight:700;font-size:11px;
+}
+.note .who{min-width:0;flex:1;line-height:1.3}
+.note .who b{display:block;font-size:12.5px;color:var(--ink);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.note .who time{font-size:11px;color:var(--ink-3)}
+
+.kind{
+  font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:999px;
+  white-space:nowrap;flex:0 0 auto;background:var(--mist-2);color:var(--ink-2);
+}
+.kind.k-location{background:var(--stop-bg);color:var(--stop)}
+.kind.k-phone{background:var(--wait-bg);color:var(--wait)}
+.kind.k-missing{background:#ede9fe;color:#6d28d9}
+.kind.k-details{background:var(--mist-2);color:var(--navy)}
+
+.note .anchor{
+  display:flex;align-items:center;gap:5px;margin:0 0 6px;
+  font-size:11.5px;font-weight:600;color:var(--navy);
+}
+.note .anchor svg{width:12px;height:12px;flex:0 0 12px}
+.note .body{margin:0;font-size:13.5px;line-height:1.55;color:var(--ink);
+  overflow-wrap:anywhere}
+
+.replies{margin:9px 0 0;padding:8px 0 0;border-top:1px solid var(--rule)}
+.reply{display:flex;gap:7px;margin:0 0 8px}
+.reply:last-child{margin-bottom:0}
+.reply > div{min-width:0;flex:1}
+.reply b{font-size:11.5px;color:var(--ink)}
+.reply time{font-size:10.5px;color:var(--ink-3);margin-left:5px}
+.reply p{margin:1px 0 0;font-size:12.5px;line-height:1.5;color:var(--ink-2);
+  overflow-wrap:anywhere}
+
+.note-actions{display:flex;flex-wrap:wrap;gap:4px;margin:9px 0 0}
+.note-actions button{
+  appearance:none;background:none;border:none;cursor:pointer;font:inherit;
+  font-size:11.5px;font-weight:600;color:var(--ink-3);padding:4px 7px;border-radius:4px;
+}
+.note-actions button:hover{background:var(--mist-2);color:var(--navy)}
+.note-actions button.danger:hover{background:var(--stop-bg);color:var(--stop)}
+
+.reply-form{display:flex;gap:6px;margin:8px 0 0}
+.reply-form input{height:32px;min-height:32px;font-size:12.5px;padding:6px 9px}
+.reply-form .btn{min-height:32px;padding:6px 12px;font-size:12px}
+
+.panel-foot{
+  margin:0;padding:9px 14px;border-top:1px solid var(--rule);flex:0 0 auto;
+  font-size:11px;line-height:1.5;color:var(--ink-3);background:var(--mist-3);
+}
+.panel-foot a{color:var(--red);font-weight:700}
+/* The feedback button floats over the bottom-right of every page, which on this
+   layout is the panel. Reserve its height so the closing note is never covered. */
+body.workspace .panel-foot{padding-bottom:74px}
+
+/* -------------------------------------------------------------- composer -- */
+.composer-wrap{
+  position:fixed;inset:0;z-index:80;background:rgba(13,26,69,.42);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.composer{
+  background:#fff;border-radius:8px;padding:22px;width:100%;max-width:440px;
+  box-shadow:var(--shadow);border-top:5px solid var(--red);
+  max-height:90dvh;overflow-y:auto;
+}
+.composer h2{font-size:18px;margin:0 0 4px}
+.composer-where{
+  margin:0 0 16px;font-size:12.5px;font-weight:600;color:var(--navy);
+  background:var(--mist-2);padding:7px 10px;border-radius:5px;
+}
+.composer label{display:block;font-size:12.5px;font-weight:700;color:var(--navy);margin:0 0 5px}
+.composer select,.composer textarea{margin:0 0 14px}
+.composer textarea{min-height:96px}
+.composer-actions{display:flex;gap:9px;justify-content:flex-end}
+
+/* ==========================================================================
+   Feedback widget  (every page)
+   --------------------------------------------------------------------------
+   Navy, not red. Red on this site means the thing you are meant to press right
+   now — the call button, the emergency number — and a feedback button is never
+   that. It sits above the fold of the footer on every page and stays out of the
+   way of the map.
+   ========================================================================== */
+
+.fb-button{
+  position:fixed;right:18px;bottom:18px;z-index:70;
+  display:inline-flex;align-items:center;gap:8px;cursor:pointer;
+  font:inherit;font-size:14px;font-weight:700;
+  background:var(--navy);color:#fff;border:none;
+  padding:12px 18px;border-radius:999px;min-height:46px;
+  box-shadow:0 8px 22px -8px rgba(13,26,69,.7);
+  transition:background-color .14s,transform .14s;
+}
+.fb-button:hover{background:var(--navy-2);transform:translateY(-1px)}
+.fb-button:focus-visible{outline:3px solid var(--sky);outline-offset:3px}
+.fb-button svg{width:17px;height:17px}
+
+body.fb-locked{overflow:hidden}
+
+.fb-wrap{
+  position:fixed;inset:0;z-index:90;background:rgba(13,26,69,.45);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.fb-panel{
+  background:#fff;border-radius:10px;width:100%;max-width:460px;
+  box-shadow:var(--shadow);max-height:92dvh;display:flex;flex-direction:column;
+  overflow:hidden;border-top:5px solid var(--navy);
+}
+.fb-head{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:18px 20px 12px;flex:0 0 auto;
+}
+.fb-head h2{font-size:19px;margin:0}
+.fb-close{
+  appearance:none;background:none;border:none;cursor:pointer;color:var(--ink-3);
+  padding:6px;border-radius:5px;display:flex;flex:0 0 auto;
+}
+.fb-close svg{width:18px;height:18px}
+.fb-close:hover{background:var(--mist-2);color:var(--ink)}
+
+.fb-body{padding:0 20px 20px;overflow-y:auto}
+.fb-lede{margin:0 0 18px;font-size:13.5px;line-height:1.6;color:var(--ink-2)}
+.fb-body label{
+  display:block;font-size:12.5px;font-weight:700;color:var(--navy);margin:0 0 5px;
+}
+.fb-opt{font-weight:500;color:var(--ink-3);font-size:11.5px}
+.fb-body select,.fb-body textarea,.fb-body input{margin:0 0 14px}
+.fb-body textarea{min-height:104px}
+.fb-hint{margin:-8px 0 14px;font-size:11.5px;line-height:1.55;color:var(--ink-3)}
+
+/* The one thing on this form that has to be read, so it is given the weight of
+   a warning rather than a footnote. */
+.fb-emergency{
+  display:flex;align-items:flex-start;gap:9px;margin:0 0 16px;
+  padding:10px 12px;border-radius:5px;
+  background:var(--stop-bg);border-left:4px solid var(--red);
+  font-size:12.5px;line-height:1.5;color:#7a1511;
+}
+.fb-emergency svg{width:15px;height:15px;flex:0 0 15px;margin-top:2px;color:var(--red)}
+.fb-emergency a{color:var(--red);font-weight:800}
+
+.fb-msg{margin:0 0 14px;padding:9px 12px;border-radius:5px;font-size:12.5px;line-height:1.5}
+.fb-msg.bad{background:var(--stop-bg);color:var(--stop)}
+.fb-msg.ok{background:var(--go-bg);color:var(--go)}
+.fb-actions{display:flex;gap:9px;justify-content:flex-end}
+
+.fb-done{padding:10px 24px 26px;text-align:center}
+.fb-done svg{width:40px;height:40px;color:var(--go);margin:0 0 10px}
+.fb-done h3{font-size:19px;margin:0 0 7px}
+.fb-done p{margin:0 0 18px;font-size:13.5px;line-height:1.6;color:var(--ink-2)}
+
+/* ------------------------------------------------- workspace responsive -- */
+@media (max-width:900px){
+  /* Below this the two columns stop being two columns: the map takes a fixed
+     slice of the viewport and the panel scrolls beneath it, because a 400px
+     sidebar on a phone is neither a map nor a panel. */
+  body.workspace{overflow:auto}
+  .work{grid-template-columns:1fr;height:auto}
+  .work-map{height:52dvh;min-height:300px}
+  .work-panel{border-left:none;border-top:1px solid var(--rule);height:auto}
+  .note-list{overflow:visible}
+  .panel-foot{position:static}
+  .fb-button{right:12px;bottom:12px;padding:11px 15px;font-size:13px}
+}
+@media (max-width:420px){
+  .fb-button span{display:none}
+  .fb-button{padding:13px;border-radius:50%}
+}

@@ -5,5 +5,6 @@ User-agent: *
 Allow: /
 Disallow: /staff.html
 Disallow: /login.html
+Disallow: /review.html
 
 Sitemap: https://ghana-hospital-beds.vercel.app/sitemap.xml

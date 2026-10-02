@@ -15,6 +15,7 @@ The system runs on a static site and a managed database. Nothing needs to be kep
 - [Access model](#access-model)
 - [Data](#data)
 - [Interfaces](#interfaces)
+- [Review sessions and feedback](#review-sessions-and-feedback)
 - [Deployment](#deployment)
 - [Repository layout](#repository-layout)
 - [Open questions](#open-questions)
@@ -208,7 +209,8 @@ Three tiers, enforced by row level security rather than by application code.
 | Public | Anyone, signed in or not | Read published hospitals, submit a suggestion, request staff access | Read suggestions, alter any hospital |
 | Applicant | Registered but unapproved | Sign in, see their request status | Report for any hospital |
 | Staff | Approved and linked to a hospital | Update that hospital's counts, phone, address and notes | Touch another hospital, or move any pin |
-| Administrator | Supabase dashboard | Approve requests, publish hospitals, review suggestions | — |
+| Reviewer | Anyone holding a session code | Read and write notes in that session | Reach any other session, or change hospital data |
+| Administrator | Supabase dashboard | Approve requests, publish hospitals, review suggestions and feedback | — |
 
 A staff account is two things: a user, and a row in `hospital_staff` linking it to a hospital. Registration creates the first; only an approval writes the second. Without the link the account signs in but sees nothing and can change nothing. That is the intended behaviour, not a fault, and it is what makes open sign-ups safe.
 
@@ -254,7 +256,7 @@ GeoLibre's field collection tool is suited to the coordinate work: it captures a
 
 Distances are straight-line and the interface says so. In Accra traffic the nearer hospital is not reliably the faster one, so the figure is a guide for choosing between candidates, and Directions gives real routing.
 
- Colour is reserved exclusively for status, so the most prominent thing on screen is whether a hospital can accept a patient. Bed counts render as monospace readouts with tabular figures, which keeps digits aligned when a list is scanned quickly. Directions open turn-by-turn routing from the reader's current location.
+Status carries its own palette, kept clear of the brand red and navy, so a hospital's state can never be mistaken for a button. Bed counts are set in tabular figures, which keeps digits aligned when a list is scanned quickly. Directions open turn-by-turn routing from the reader's current location.
 
 Staff may also correct their own hospital's contact details, in a panel kept separate from the daily report so the twice-daily task stays short. Which fields they may touch is set by column privileges rather than by hiding inputs: bed counts, phone, address, area, type and notes are theirs; name, position, published state and licence number are the administrator's. The split follows the cost of being wrong, since a wrong phone number wastes a call while a wrong position sends an ambulance to the wrong place.
 
@@ -263,6 +265,86 @@ Staff may also correct their own hospital's contact details, in a panel kept sep
 **`site/register.html`** lets staff create their own account and request access to one hospital. It lists only published hospitals, so a request cannot name a facility that does not exist.
 
 **`site/suggest.html`** accepts facility proposals from anyone, validates coordinates against the Greater Accra bounding box, and offers device geolocation instead of typing coordinates by hand. Rejecting out-of-area points catches transposed latitude and longitude, which is the most consequential data-entry error in the system.
+
+---
+
+## Review sessions and feedback
+
+Two ways to tell the project something is wrong. They are deliberately separate,
+because they answer different questions.
+
+### Review sessions — `site/review.html`
+
+A **live, shared map**. One person starts a session and reads out an eight
+character code; anyone with the code opens the same map, and notes dropped on a
+hospital appear on everyone's screen as they are typed. Each note records what
+kind of correction it is — wrong position, wrong number, wrong details, a
+missing facility — and carries a thread, so a disagreement is settled in place
+rather than in a side conversation.
+
+This exists because of the prerequisites listed above: nineteen of twenty-two
+coordinates are approximate and several phone numbers are blank, and the only
+people who can settle either are the hospitals themselves. A session is the
+twenty minutes where that happens. It ends with a list of resolved and
+unresolved notes, which is a work list rather than a transcript.
+
+Sessions are also the reason to make the call. "Could someone spend twenty
+minutes on a shared map with us" is a far smaller ask than "could the hospital
+commit to reporting bed counts twice a day", and it is the step that makes the
+second ask credible.
+
+**What it is not.** It is not a dispatch channel. A live map with a chat on it
+is one small step from someone typing *we need a bed in Osu, now* into a room
+where nobody is sitting. The panel says so at the bottom of every session, and
+anything resembling an emergency goes to 112.
+
+### Feedback — the button on every page
+
+A **short asynchronous form**, open to anyone, with nobody required to be
+present. A wrong phone number noticed at eleven at night has somewhere to go,
+and the form is honest that it is read when someone next looks rather than
+immediately.
+
+Feedback can name a hospital, which is what links the two features: a report
+about a specific facility is the raw material for the next review session.
+
+### How liveness works without a server
+
+GeoLibre, whose session model this follows, relays through a WebSocket worker.
+That would mean a machine to keep running, which is the one thing the
+architecture above refuses.
+
+Instead, every note and reply is written through a `security definer` function
+in Postgres that checks the session code before it does anything. **That write
+is the authority.** Supabase Realtime then carries the same change to the other
+people in the session so their screen updates without a refresh, and carries
+cursors so you can see where someone else is looking.
+
+Realtime is a courier, never a source of truth. If the socket never connects,
+the session still works — a poll every twelve seconds keeps it correct, and the
+status line says so rather than pretending. Losing the socket costs latency, not
+data.
+
+### Who can read a session
+
+A session is readable and writable by whoever holds its code, with no account.
+That matches how the work actually happens: a records officer giving the project
+twenty minutes should not have to register first.
+
+Row level security cannot express *only if the caller supplied the right code*,
+because a policy cannot require that a client has filtered. So the client is
+given **no privileges at all** on the three review tables, and every read and
+write goes through a function that takes the code and checks it first. Without
+the code the functions return nothing, and there is no second route to the data.
+
+Notes are therefore not public, and never appear on the emergency map. A session
+code is an unguessable eight characters from a 32-letter alphabet, the session
+expires after thirty days, and a cross-session note id is rejected rather than
+silently accepted.
+
+Feedback follows the same shape as hospital suggestions: anyone may insert, and
+nobody may read it back, because a message can carry an email address or a phone
+number.
 
 ---
 
@@ -311,6 +393,11 @@ In Vercel, add the domain under Settings, Domains, then create the DNS record it
 │   ├── suggest.html            Public facility suggestion
 │   ├── register.html           Staff access request
 │   ├── login.html              Staff sign-in
+│   ├── review.html             Shared map review workspace
+│   ├── theme.css               One stylesheet for every page
+│   ├── ui.js                   Header behaviour
+│   ├── review.js               Review sessions, notes, presence
+│   ├── feedback.js             Feedback widget, injected on every page
 │   ├── config.js               Supabase URL and anonymous key
 │   ├── favicon.svg
 │   └── data/                   Dataset copy served by Pages
@@ -319,7 +406,11 @@ In Vercel, add the domain under Settings, Domains, then create the DNS record it
 │   │   ├── 0001_core.sql         Schema, policies, generated status
 │   │   ├── 0002_staff_requests.sql  Registration and approval
 │   │   ├── 0003_suggestion_review.sql  Suggestion approval
-│   │   └── 0004_staff_editable_columns.sql  Column privileges
+│   │   ├── 0004_staff_editable_columns.sql  Column privileges
+│   │   ├── 0005_public_read_grants.sql  View grants and security_invoker
+│   │   ├── 0006_least_privilege.sql  Client roles reduced to what pages call
+│   │   ├── 0007_advisor_fixes.sql  Security advisor findings
+│   │   └── 0008_review_and_feedback.sql  Review sessions, notes, feedback
 │   ├── seed.sql                  Generated hospital records
 │   └── SETUP.md                  Dashboard walkthrough
 └── vercel.json                 Hosting and cache rules
@@ -336,6 +427,10 @@ In Vercel, add the domain under Settings, Domains, then create the DNS record it
 **SMS reporting.** Carriers charge per message on every platform, so this is the one component that cannot be free. Out of scope pending a decision on whether the cost is justified for hospitals without reliable data access.
 
 **Hospital participation.** Live bed data requires agreements with each participating hospital. No production deployment is possible until these are in place.
+
+**Review session moderation.** Anyone holding a code can delete any note in that session, which is the same latitude GeoLibre gives a participant and suits a room of people who were invited into it. A session shared more widely than intended has no way to take that back short of letting it expire. A host token, as GeoLibre uses for its session-wide controls, is the answer if sessions ever outgrow a phone call.
+
+**Feedback volume.** The form is rate-limited per browser only, which stops a stuck finger and nothing more determined. The table is write-only and capped per field, so the exposure is noise rather than damage, but a busy period would need reviewing in the dashboard by hand.
 
 ---
 

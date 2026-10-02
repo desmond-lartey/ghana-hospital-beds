@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Map review — Accra Hospital Beds</title>
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./favicon.svg">
+<meta name="description" content="Review hospital locations and contact details together, in a live session on the map.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.min.css" rel="stylesheet">
+<link href="./theme.css" rel="stylesheet">
+</head>
+<body class="workspace">
+
+<a class="skip" href="#panel">Skip to the review panel</a>
+
+<header class="site-head">
+  <div class="shell">
+    <a class="brand" href="./index.html" aria-label="Accra Hospital Beds, home">
+      <svg class="brand-mark" viewBox="0 0 30 36" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M15 4v29" stroke="#1e3a8f" stroke-width="3.2" stroke-linecap="round" fill="none"/>
+        <path d="M10 31.5c11-1.5 11-6.5 5-8s-6-6.5 0-8c4-1 5.5-3.5 4.5-6" stroke="#e0201b" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <circle cx="19" cy="6" r="2.6" fill="#e0201b"/>
+      </svg>
+      <span class="brand-text"><b>Accra</b><span>Hospital Beds</span></span>
+    </a>
+
+    <button class="burger" id="burger" aria-expanded="false" aria-controls="nav" aria-label="Menu">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="./index.html#about">About</a>
+      <a href="./index.html">Live map</a>
+      <a href="./index.html#hospital-list">Hospitals</a>
+
+      <div class="drop" data-open="false">
+        <button class="nav-top" type="button" aria-expanded="false" aria-controls="drop-staff">
+          For staff
+          <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div class="drop-menu" id="drop-staff" hidden>
+          <a href="./staff.html">Report bed counts</a>
+          <a href="./register.html">Request staff access</a>
+          <a href="./login.html">Sign in</a>
+        </div>
+      </div>
+
+      <a href="./suggest.html">Suggest a hospital</a>
+    </nav>
+
+    <div class="head-tools">
+      <a class="phone-pill" href="tel:112">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
+        <span>Ambulance 112</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<main class="work">
+
+  <!-- ============================================================= map == -->
+  <div class="work-map">
+    <div id="review-map" role="region" aria-label="Map of Accra hospitals for review"></div>
+
+    <p class="placing-hint" id="placing-hint" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Click the hospital or the place you want to raise. Press <kbd>Esc</kbd> to cancel.
+    </p>
+
+    <div class="map-legend">
+      <span><i class="swatch is-hosp"></i>Hospital on the map</span>
+      <span><i class="swatch is-note"></i>Review note · colour shows who left it</span>
+    </div>
+  </div>
+
+  <!-- =========================================================== panel == -->
+  <aside class="work-panel" id="panel" aria-label="Review notes">
+
+    <div class="panel-top">
+      <h1>
+        Review notes
+        <span class="count" id="count-badge">0</span>
+      </h1>
+      <button type="button" class="btn btn-red btn-sm" id="btn-add-note"
+              aria-pressed="false" disabled>Add note</button>
+    </div>
+
+    <!-- who you are -->
+    <div class="name-bar">
+      <div class="name-row" id="name-row">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+        <span id="name-display" class="unset">No name set</span>
+        <button type="button" id="name-pencil" aria-label="Set your name">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+        </button>
+      </div>
+      <div class="name-edit" id="name-edit" hidden>
+        <input type="text" id="name-input" placeholder="Your name" maxlength="80" aria-label="Your name">
+        <button type="button" id="name-save" class="btn btn-navy btn-sm">Save</button>
+      </div>
+    </div>
+
+    <!-- session controls -->
+    <div class="session-box">
+
+      <div id="session-idle">
+        <input type="text" id="new-label" maxlength="120"
+               placeholder="What are you reviewing? e.g. Korle Bu pin check"
+               aria-label="Session name">
+        <button type="button" class="btn btn-navy btn-block" id="btn-start">
+          <span class="live-dot" aria-hidden="true"></span>Start live session
+        </button>
+
+        <div class="or-rule"><span>or join one</span></div>
+
+        <div class="join-row">
+          <input type="text" id="join-code" placeholder="ENTER SESSION CODE"
+                 maxlength="8" autocomplete="off" spellcheck="false"
+                 aria-label="Session code">
+          <button type="button" class="btn btn-red" id="btn-join">Connect</button>
+        </div>
+      </div>
+
+      <div id="session-live" hidden>
+        <div class="code-card">
+          <div>
+            <span class="code-label">Session code</span>
+            <span class="code" id="code-display"></span>
+            <span class="code-sub" id="session-label"></span>
+          </div>
+          <button type="button" class="btn btn-outline-navy btn-sm" id="btn-copy">Copy link</button>
+        </div>
+      </div>
+
+      <div class="session-state">
+        <span class="dot" id="session-dot" aria-hidden="true"></span>
+        <span id="session-state">Offline &middot; private workspace</span>
+        <span class="avatars" id="presence-list"></span>
+        <button type="button" id="btn-leave" class="leave" hidden>Leave</button>
+      </div>
+
+      <p class="session-msg" id="session-msg" hidden></p>
+    </div>
+
+    <!-- filters -->
+    <div class="tabs" role="group" aria-label="Filter notes">
+      <button type="button" id="tab-open" aria-pressed="true">Open (0)</button>
+      <button type="button" id="tab-resolved" aria-pressed="false">Resolved (0)</button>
+      <button type="button" id="tab-all" aria-pressed="false">All (0)</button>
+    </div>
+
+    <!-- notes -->
+    <div class="note-list" id="note-list"></div>
+
+    <p class="panel-foot">
+      Review notes are for correcting the map. They are not monitored, and
+      nobody is on call here. In an emergency, call <a href="tel:112">112</a>.
+    </p>
+  </aside>
+</main>
+
+<!-- ======================================================== composer == -->
+<div class="composer-wrap" id="composer" hidden>
+  <form class="composer" id="composer-form">
+    <h2>New review note</h2>
+    <p class="composer-where" id="composer-where"></p>
+
+    <label for="composer-kind">What is this about?</label>
+    <select id="composer-kind">
+      <option value="location">The pin is in the wrong place</option>
+      <option value="phone">The phone number is wrong</option>
+      <option value="details">Name, address or services need correcting</option>
+      <option value="missing">A facility is missing from the map</option>
+      <option value="other">Something else</option>
+    </select>
+
+    <label for="composer-body">Note</label>
+    <textarea id="composer-body" maxlength="2000" required
+              placeholder="What is wrong, and what should it be?"></textarea>
+
+    <div class="composer-actions">
+      <button type="button" class="btn btn-outline-navy" id="composer-cancel">Cancel</button>
+      <button type="submit" class="btn btn-red" id="composer-save">Save note</button>
+    </div>
+  </form>
+</div>
+
+<datalist id="hospital-options"></datalist>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="./config.js"></script>
+<script src="./ui.js"></script>
+<script src="./review.js"></script>
+<script src="./feedback.js"></script>
+</body>
+</html>
